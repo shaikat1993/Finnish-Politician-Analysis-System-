@@ -15,6 +15,7 @@ CREATE CONSTRAINT position_id_unique IF NOT EXISTS FOR (pos:Position) REQUIRE po
 CREATE CONSTRAINT constituency_id_unique IF NOT EXISTS FOR (c:Constituency) REQUIRE c.constituency_id IS UNIQUE;
 CREATE CONSTRAINT policy_topic_id_unique IF NOT EXISTS FOR (pt:PolicyTopic) REQUIRE pt.topic_id IS UNIQUE;
 CREATE CONSTRAINT event_id_unique IF NOT EXISTS FOR (e:Event) REQUIRE e.event_id IS UNIQUE;
+CREATE CONSTRAINT province_id_unique IF NOT EXISTS FOR (p:Province) REQUIRE p.province_id IS UNIQUE;
 
 // Business Logic Constraints
 CREATE CONSTRAINT politician_name_party_unique IF NOT EXISTS FOR (p:Politician) REQUIRE (p.name, p.current_party) IS UNIQUE;
@@ -47,6 +48,11 @@ CREATE INDEX position_hierarchy_index IF NOT EXISTS FOR (pos:Position) ON (pos.h
 // Temporal Analysis Indexes
 CREATE INDEX event_date_index IF NOT EXISTS FOR (e:Event) ON (e.event_date);
 CREATE INDEX event_type_index IF NOT EXISTS FOR (e:Event) ON (e.event_type);
+
+// Province Indexes
+CREATE INDEX province_name_fi IF NOT EXISTS FOR (p:Province) ON (p.name_fi);
+CREATE INDEX province_name_en IF NOT EXISTS FOR (p:Province) ON (p.name_en);
+CREATE INDEX province_population IF NOT EXISTS FOR (p:Province) ON (p.population);
 
 // =============================================================================
 // 3. CORE ENTITY NODES - Rich Data Model
@@ -97,6 +103,11 @@ CREATE INDEX event_type_index IF NOT EXISTS FOR (e:Event) ON (e.event_type);
 //            participants[], outcomes[], media_coverage, significance_score,
 //            related_topics[], created_at, updated_at
 
+// Province Node - Official Finnish Regions (Maakunta)
+// Properties: province_id, name_fi, name_sv, name_en, population, area_km2,
+//            population_density, capital, coordinates{lat, lon}, municipalities[],
+//            last_updated, source, is_active, created_at, updated_at
+
 // =============================================================================
 // 4. STRATEGIC RELATIONSHIPS - Political Network Analysis
 // =============================================================================
@@ -132,6 +143,12 @@ CREATE INDEX event_type_index IF NOT EXISTS FOR (e:Event) ON (e.event_type);
 // (:Politician)-[:INFLUENCES {influence_type, strength, evidence[]}]->(:Politician)
 // (:Politician)-[:ADVISED_BY {role, start_date, end_date}]->(:Advisor)
 // (:Politician)-[:ENDORSED_BY {endorsement_date, endorsement_type}]->(:Organization)
+
+// Province Relationships
+// (:Province)-[:REPRESENTS {start_date, end_date, vote_share, is_current}]->(:Constituency)
+// (:Politician)-[:LIVES_IN {start_date, end_date, residence_type, is_current}]->(:Province)
+// (:Municipality)-[:LOCATED_IN {start_date, end_date, location_type, is_current}]->(:Province)
+// (:Article)-[:COVERS {coverage_type, prominence}]->(:Province)
 
 // =============================================================================
 // 5. ADVANCED ANALYTICS VIEWS - Optimized Queries

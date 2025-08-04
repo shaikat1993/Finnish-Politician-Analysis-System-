@@ -1,0 +1,2002 @@
+[
+  {
+    "politician_id": 1109,
+    "name": "Jussi Halla-aho",
+    "party": "ps",
+    "seat_number": 0,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Halla-aho-Jussi-web-1109.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1155,
+    "name": "Anna Kontula",
+    "party": "vas",
+    "seat_number": 1,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kontula-Anna-web-1155.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 511,
+    "name": "Pia Viitanen",
+    "party": "sd",
+    "seat_number": 2,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Viitanen-Pia-web-511.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 358,
+    "name": "Johannes Koskinen",
+    "party": "sd",
+    "seat_number": 3,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Koskinen-Johannes-web-358.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 451,
+    "name": "Tarja Filatov",
+    "party": "sd",
+    "seat_number": 4,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Filatov-Tarja-web-451.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 118,
+    "name": "Pekka Haavisto",
+    "party": "vihr",
+    "seat_number": 5,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Haavisto-Pekka-web-118.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 772,
+    "name": "Antti Kaikkonen",
+    "party": "kesk",
+    "seat_number": 6,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kaikkonen-Antti-web-772.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 583,
+    "name": "Mika Lintilä",
+    "party": "kesk",
+    "seat_number": 7,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lintila-Mika-web-583.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 351,
+    "name": "Eva Biaudet",
+    "party": "r",
+    "seat_number": 8,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Biaudet-Eva-web-351.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 499,
+    "name": "Päivi Räsänen",
+    "party": "kd",
+    "seat_number": 9,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rasanen-Paivi-web-499.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1137,
+    "name": "Pauli Kiuru",
+    "party": "kok",
+    "seat_number": 10,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kiuru-Pauli-web-1137.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 809,
+    "name": "Paula Risikko",
+    "party": "kok",
+    "seat_number": 11,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Risikko-Paula-web-809.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 784,
+    "name": "Arto Satonen",
+    "party": "kok",
+    "seat_number": 12,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Satonen-Arto-web-784.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1094,
+    "name": "Markku Eestilä",
+    "party": "kok",
+    "seat_number": 13,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Eestila-Markku-web-1094.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1096,
+    "name": "Ritva Elomaa",
+    "party": "ps",
+    "seat_number": 14,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Elomaa-Ritva-web-1096.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1129,
+    "name": "Arja Juvonen",
+    "party": "ps",
+    "seat_number": 15,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Juvonen-Arja-web-1129.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1093,
+    "name": "Juho Eerola",
+    "party": "ps",
+    "seat_number": 16,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Eerola-Juho-web-1093.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1312,
+    "name": "Hanna Sarkkinen",
+    "party": "vas",
+    "seat_number": 17,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Sarkkinen-Hanna-web-1312.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 971,
+    "name": "Johanna Ojala-Niemelä",
+    "party": "sd",
+    "seat_number": 18,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Ojala-Niemela-Johanna-web-971.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1306,
+    "name": "Anders Adlercreutz",
+    "party": "r",
+    "seat_number": 80,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Adlercreutz-Anders-web-1306.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1325,
+    "name": "Sari Tanus",
+    "party": "kd",
+    "seat_number": 81,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Tanus-Sari-web-1325.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1323,
+    "name": "Mari-Leena Talvitie",
+    "party": "kok",
+    "seat_number": 82,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Talvitie-Mari-Leena-web-1323.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1299,
+    "name": "Sari Multala",
+    "party": "kok",
+    "seat_number": 83,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Multala-Sari-web-1299.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1279,
+    "name": "Elina Valtonen",
+    "party": "kok",
+    "seat_number": 84,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Valtonen-Elina-web-1279.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1135,
+    "name": "Pia Kauma",
+    "party": "kok",
+    "seat_number": 85,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kauma-Pia-web-1135.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1134,
+    "name": "Sofia Vikman",
+    "party": "kok",
+    "seat_number": 86,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Vikman-Sofia-web-1134.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1391,
+    "name": "Ari Koponen",
+    "party": "ps",
+    "seat_number": 87,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Koponen-Ari-web-1391.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1417,
+    "name": "Lulu Ranne",
+    "party": "ps",
+    "seat_number": 88,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Ranne-Lulu-web-1417.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1439,
+    "name": "Mauri Peltokangas",
+    "party": "ps",
+    "seat_number": 89,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Peltokangas-Mauri-web-1439.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1219,
+    "name": "Saara-Sofia Sirén",
+    "party": "kok",
+    "seat_number": 116,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Siren-Saara-Sofia-web-1219.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1334,
+    "name": "Antti Häkkänen",
+    "party": "kok",
+    "seat_number": 117,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Hakkanen-Antti-web-1334.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1089,
+    "name": "Heikki Autto",
+    "party": "kok",
+    "seat_number": 118,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Autto-Heikki-web-1089.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1531,
+    "name": "Tomi Immonen",
+    "party": "ps",
+    "seat_number": 122,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Immonen-Tomi-web-1531.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1511,
+    "name": "Lauri Lyly",
+    "party": "sd",
+    "seat_number": 129,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lyly-Lauri-web-1511.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 960,
+    "name": "Krista Kiuru",
+    "party": "sd",
+    "seat_number": 19,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kiuru-Krista-web-960.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 538,
+    "name": "Tuula Haatainen",
+    "party": "sd",
+    "seat_number": 20,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Haatainen-Tuula-web-538.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 464,
+    "name": "Kimmo Kiljunen",
+    "party": "sd",
+    "seat_number": 21,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kiljunen-Kimmo-web-464.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 807,
+    "name": "Miapetra Kumpula-Natri",
+    "party": "sd",
+    "seat_number": 22,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kumpula-Natri-Miapetra-web-807.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 846,
+    "name": "Oras Tynkkynen",
+    "party": "vihr",
+    "seat_number": 23,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Tynkkynen-Oras-web-846.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 953,
+    "name": "Anne Kalmari",
+    "party": "kesk",
+    "seat_number": 24,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kalmari-Anne-web-953.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 797,
+    "name": "Hannu Hoskonen",
+    "party": "kesk",
+    "seat_number": 25,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Hoskonen-Hannu-web-797.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1345,
+    "name": "Mats Löfström",
+    "party": "r",
+    "seat_number": 26,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lofstrom-Mats-web-1345.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1318,
+    "name": "Joakim Strand",
+    "party": "r",
+    "seat_number": 27,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Strand-Joakim-web-1318.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 778,
+    "name": "Sari Essayah",
+    "party": "kd",
+    "seat_number": 28,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Essayah-Sari-web-778.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1131,
+    "name": "Sinuhe Wallinheimo",
+    "party": "kok",
+    "seat_number": 29,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Wallinheimo-Sinuhe-web-1131.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1142,
+    "name": "Jukka Kopra",
+    "party": "kok",
+    "seat_number": 30,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kopra-Jukka-web-1142.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 612,
+    "name": "Sari Sarkomaa",
+    "party": "kok",
+    "seat_number": 31,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Sarkomaa-Sari-web-612.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1349,
+    "name": "Leena Meri",
+    "party": "ps",
+    "seat_number": 32,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Meri-Leena-web-1349.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1413,
+    "name": "Jari Koskela",
+    "party": "ps",
+    "seat_number": 33,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Koskela-Jari-web-1413.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1136,
+    "name": "Ville Vähämäki",
+    "party": "ps",
+    "seat_number": 34,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Vahamaki-Ville-web-1136.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1308,
+    "name": "Jari Ronkainen",
+    "party": "ps",
+    "seat_number": 35,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Ronkainen-Jari-web-1308.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1327,
+    "name": "Ville Tavio",
+    "party": "ps",
+    "seat_number": 36,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Tavio-Ville-web-1327.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1418,
+    "name": "Veijo Niemi",
+    "party": "ps",
+    "seat_number": 37,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Niemi-Veijo-web-1418.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1314,
+    "name": "Sami Savio",
+    "party": "ps",
+    "seat_number": 38,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Savio-Sami-web-1314.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1485,
+    "name": "Minja Koskela",
+    "party": "vas",
+    "seat_number": 39,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Koskela-Minja-web-1485.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1097,
+    "name": "Aino-Kaisa Pekonen",
+    "party": "vas",
+    "seat_number": 40,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Pekonen-Aino-Kaisa-web-1097.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1133,
+    "name": "Mika Kari",
+    "party": "sd",
+    "seat_number": 41,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kari-Mika-web-1133.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1099,
+    "name": "Eeva-Johanna Eloranta",
+    "party": "sd",
+    "seat_number": 42,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Eloranta-Eeva-Johanna-web-1099.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1126,
+    "name": "Tytti Tuppurainen",
+    "party": "sd",
+    "seat_number": 43,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Tuppurainen-Tytti-web-1126.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1147,
+    "name": "Antti Lindtman",
+    "party": "sd",
+    "seat_number": 44,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lindtman-Antti-web-1147.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 794,
+    "name": "Tuula Väätäinen",
+    "party": "sd",
+    "seat_number": 45,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Vaatainen-Tuula-web-794.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1298,
+    "name": "Krista Mikkonen",
+    "party": "vihr",
+    "seat_number": 46,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Mikkonen-Krista-web-1298.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1411,
+    "name": "Sofia Virta",
+    "party": "vihr",
+    "seat_number": 47,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Virta-Sofia-web-1411.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1157,
+    "name": "Annika Saarikko",
+    "party": "kesk",
+    "seat_number": 48,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Saarikko-Annika-web-1157.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1106,
+    "name": "Mikko Savola",
+    "party": "kesk",
+    "seat_number": 49,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Savola-Mikko-web-1106.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1149,
+    "name": "Markus Lohi",
+    "party": "kesk",
+    "seat_number": 50,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lohi-Markus-web-1149.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1406,
+    "name": "Sandra Bergqvist",
+    "party": "r",
+    "seat_number": 51,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Bergqvist-Sandra-web-1406.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1141,
+    "name": "Peter Östman",
+    "party": "kd",
+    "seat_number": 52,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Ostman-Peter-web-1141.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1100,
+    "name": "Sanni Grahn-Laasonen",
+    "party": "kok",
+    "seat_number": 53,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Grahn-Laasonen-Sanni-web-1100.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 947,
+    "name": "Petteri Orpo",
+    "party": "kok",
+    "seat_number": 54,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Orpo-Petteri-web-947.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 967,
+    "name": "Timo Heinonen",
+    "party": "kok",
+    "seat_number": 55,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Heinonen-Timo-web-967.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 301,
+    "name": "Ben Zyskowicz",
+    "party": "kok",
+    "seat_number": 56,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Zyskowicz-Ben-web-301.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1333,
+    "name": "Laura Huhtasaari",
+    "party": "ps",
+    "seat_number": 57,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Huhtasaari-Laura-web-1333.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1392,
+    "name": "Riikka Purra",
+    "party": "ps",
+    "seat_number": 58,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Purra-Riikka-web-1392.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1301,
+    "name": "Jani Mäkelä",
+    "party": "ps",
+    "seat_number": 59,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Makela-Jani-web-1301.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1282,
+    "name": "Wille Rydman",
+    "party": "ps",
+    "seat_number": 60,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rydman-Wille-web-1282.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1388,
+    "name": "Mari Rantanen",
+    "party": "ps",
+    "seat_number": 61,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rantanen-Mari-web-1388.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1435,
+    "name": "Minna Reijonen",
+    "party": "ps",
+    "seat_number": 62,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Reijonen-Minna-web-1435.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1455,
+    "name": "Kaisa Juuso",
+    "party": "ps",
+    "seat_number": 63,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Juuso-Kaisa-web-1455.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1426,
+    "name": "Sheikki Laakso",
+    "party": "ps",
+    "seat_number": 64,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Laakso-Sheikki-web-1426.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1399,
+    "name": "Pia Lohikoski",
+    "party": "vas",
+    "seat_number": 65,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lohikoski-Pia-web-1399.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1384,
+    "name": "Mai Kivelä",
+    "party": "vas",
+    "seat_number": 66,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kivela-Mai-web-1384.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1383,
+    "name": "Veronika Honkasalo",
+    "party": "vas",
+    "seat_number": 67,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Honkasalo-Veronika-web-1383.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1443,
+    "name": "Kim Berg",
+    "party": "sd",
+    "seat_number": 68,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Berg-Kim-web-1443.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1380,
+    "name": "Riitta Mäkinen",
+    "party": "sd",
+    "seat_number": 69,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Makinen-Riitta-web-1380.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1316,
+    "name": "Ville Skinnari",
+    "party": "sd",
+    "seat_number": 70,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Skinnari-Ville-web-1316.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1302,
+    "name": "Ilmari Nurminen",
+    "party": "sd",
+    "seat_number": 71,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Nurminen-Ilmari-web-1302.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1326,
+    "name": "Timo Harakka",
+    "party": "sd",
+    "seat_number": 72,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Harakka-Timo-web-1326.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 970,
+    "name": "Marko Asell",
+    "party": "sd",
+    "seat_number": 73,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Asell-Marko-web-970.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1144,
+    "name": "Suna Kymäläinen",
+    "party": "sd",
+    "seat_number": 74,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kymalainen-Suna-web-1144.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1445,
+    "name": "Bella Forsgrén",
+    "party": "vihr",
+    "seat_number": 75,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Forsgren-Bella-web-1445.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1331,
+    "name": "Petri Honkonen",
+    "party": "kesk",
+    "seat_number": 76,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Honkonen-Petri-web-1331.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1341,
+    "name": "Antti Kurvinen",
+    "party": "kesk",
+    "seat_number": 77,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kurvinen-Antti-web-1341.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1338,
+    "name": "Hanna Kosonen",
+    "party": "kesk",
+    "seat_number": 78,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kosonen-Hanna-web-1338.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1189,
+    "name": "Otto Andersson",
+    "party": "r",
+    "seat_number": 79,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Andersson-Otto-web-1189.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1409,
+    "name": "Vilhelm Junnila",
+    "party": "ps",
+    "seat_number": 90,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Junnila-Vilhelm-web-1409.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1450,
+    "name": "Jenna Simula",
+    "party": "ps",
+    "seat_number": 91,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Simula-Jenna-web-1450.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1467,
+    "name": "Petri Huru",
+    "party": "ps",
+    "seat_number": 92,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Huru-Petri-web-1467.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1419,
+    "name": "Sakari Puisto",
+    "party": "ps",
+    "seat_number": 93,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Puisto-Sakari-web-1419.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1437,
+    "name": "Juha Mäenpää",
+    "party": "ps",
+    "seat_number": 94,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Maenpaa-Juha-web-1437.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1527,
+    "name": "Pia Sillanpää",
+    "party": "ps",
+    "seat_number": 95,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Sillanpaa-Pia-web-1527.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1526,
+    "name": "Anne Rintamäki",
+    "party": "ps",
+    "seat_number": 96,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rintamaki-Anne-web-1526.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1407,
+    "name": "Johannes Yrttiaho",
+    "party": "vas",
+    "seat_number": 97,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Yrttiaho-Johannes-web-1407.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1429,
+    "name": "Paula Werning",
+    "party": "sd",
+    "seat_number": 98,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Werning-Paula-web-1429.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1311,
+    "name": "Joona Räsänen",
+    "party": "sd",
+    "seat_number": 99,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rasanen-Joona-web-1311.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1447,
+    "name": "Piritta Rantanen",
+    "party": "sd",
+    "seat_number": 100,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rantanen-Piritta-web-1447.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1428,
+    "name": "Niina Malm",
+    "party": "sd",
+    "seat_number": 101,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Malm-Niina-web-1428.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1408,
+    "name": "Aki Lindén",
+    "party": "sd",
+    "seat_number": 102,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Linden-Aki-web-1408.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1398,
+    "name": "Johan Kvarnström",
+    "party": "sd",
+    "seat_number": 103,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kvarnstrom-Johan-web-1398.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1390,
+    "name": "Eveliina Heinäluoma",
+    "party": "sd",
+    "seat_number": 104,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Heinaluoma-Eveliina-web-1390.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1430,
+    "name": "Seppo Eskelinen",
+    "party": "sd",
+    "seat_number": 105,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Eskelinen-Seppo-web-1430.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1385,
+    "name": "Atte Harjanne",
+    "party": "vihr",
+    "seat_number": 106,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Harjanne-Atte-web-1385.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1424,
+    "name": "Hanna Holopainen",
+    "party": "vihr",
+    "seat_number": 107,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Holopainen-Hanna-web-1424.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1433,
+    "name": "Hanna Räsänen",
+    "party": "kesk",
+    "seat_number": 108,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rasanen-Hanna-web-1433.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 913,
+    "name": "Eerikki Viljanen",
+    "party": "kesk",
+    "seat_number": 109,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Viljanen-Eerikki-web-913.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1382,
+    "name": "Hanna-Leena Mattila",
+    "party": "kesk",
+    "seat_number": 110,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Mattila-Hanna-Leena-web-1382.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1440,
+    "name": "Anders Norrback",
+    "party": "r",
+    "seat_number": 111,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Norrback-Anders-web-1440.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1495,
+    "name": "Mika Poutala",
+    "party": "kd",
+    "seat_number": 112,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Poutala-Mika-web-1495.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1432,
+    "name": "Marko Kilpi",
+    "party": "kok",
+    "seat_number": 113,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kilpi-Marko-web-1432.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1379,
+    "name": "Mia Laiho",
+    "party": "kok",
+    "seat_number": 114,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Laiho-Mia-web-1379.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1265,
+    "name": "Matias Marttinen",
+    "party": "kok",
+    "seat_number": 115,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Marttinen-Matias-web-1265.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1434,
+    "name": "Sanna Antikainen",
+    "party": "ps",
+    "seat_number": 119,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Antikainen-Sanna-web-1434.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1452,
+    "name": "Pekka Aittakumpu",
+    "party": "ps",
+    "seat_number": 120,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Aittakumpu-Pekka-web-1452.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1499,
+    "name": "Jorma Piisinen",
+    "party": "ps",
+    "seat_number": 121,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Piisinen-Jorma-web-1499.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1508,
+    "name": "Rami Lehtinen",
+    "party": "ps",
+    "seat_number": 123,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lehtinen-Rami-web-1508.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1498,
+    "name": "Teemu Keskisarja",
+    "party": "ps",
+    "seat_number": 124,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Keskisarja-Teemu-web-1498.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1516,
+    "name": "Jaana Strandman",
+    "party": "ps",
+    "seat_number": 125,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Strandman-Jaana-web-1516.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1509,
+    "name": "Mira Nieminen",
+    "party": "ps",
+    "seat_number": 126,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Nieminen-Mira-web-1509.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1523,
+    "name": "Laura Meriluoto",
+    "party": "vas",
+    "seat_number": 127,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Meriluoto-Laura-web-1523.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1502,
+    "name": "Timo Furuholm",
+    "party": "vas",
+    "seat_number": 128,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Furuholm-Timo-web-1502.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1529,
+    "name": "Jani Kokko",
+    "party": "sd",
+    "seat_number": 130,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kokko-Jani-web-1529.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1534,
+    "name": "Pia Hiltunen",
+    "party": "sd",
+    "seat_number": 131,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Hiltunen-Pia-web-1534.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1488,
+    "name": "Elisa Gebhard",
+    "party": "sd",
+    "seat_number": 132,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Gebhard-Elisa-web-1488.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1202,
+    "name": "Nasima Razmyar",
+    "party": "sd",
+    "seat_number": 133,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Razmyar-Nasima-web-1202.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1469,
+    "name": "Matias Mäkynen",
+    "party": "sd",
+    "seat_number": 134,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Makynen-Matias-web-1469.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1402,
+    "name": "Inka Hopsu",
+    "party": "vihr",
+    "seat_number": 135,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Hopsu-Inka-web-1402.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1403,
+    "name": "Saara Hyrkkö",
+    "party": "vihr",
+    "seat_number": 136,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Hyrkko-Saara-web-1403.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1415,
+    "name": "Hilkka Kemppi",
+    "party": "kesk",
+    "seat_number": 137,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kemppi-Hilkka-web-1415.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1422,
+    "name": "Jouni Ovaska",
+    "party": "kesk",
+    "seat_number": 138,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Ovaska-Jouni-web-1422.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1412,
+    "name": "Eeva Kalli",
+    "party": "kesk",
+    "seat_number": 139,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kalli-Eeva-web-1412.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1501,
+    "name": "Henrik Wickström",
+    "party": "r",
+    "seat_number": 140,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Wickstrom-Henrik-web-1501.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1441,
+    "name": "Mikko Ollikainen",
+    "party": "r",
+    "seat_number": 141,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Ollikainen-Mikko-web-1441.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1483,
+    "name": "Ville Valkonen",
+    "party": "kok",
+    "seat_number": 142,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Valkonen-Ville-web-1483.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1481,
+    "name": "Atte Kaleva",
+    "party": "kok",
+    "seat_number": 143,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kaleva-Atte-web-1481.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1421,
+    "name": "Anna-Kaisa Ikonen",
+    "party": "kok",
+    "seat_number": 144,
+    "minister": true,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Ikonen-Anna-Kaisa-web-1421.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1454,
+    "name": "Janne Heikkinen",
+    "party": "kok",
+    "seat_number": 145,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Heikkinen-Janne-web-1454.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1396,
+    "name": "Heikki Vestman",
+    "party": "kok",
+    "seat_number": 146,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Vestman-Heikki-web-1396.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1425,
+    "name": "Ville Kaunisto",
+    "party": "kok",
+    "seat_number": 147,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kaunisto-Ville-web-1425.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1394,
+    "name": "Pihla Keto-Huovinen",
+    "party": "kok",
+    "seat_number": 148,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Keto-Huovinen-Pihla-web-1394.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1389,
+    "name": "Terhi Koulumies",
+    "party": "kok",
+    "seat_number": 149,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Koulumies-Terhi-web-1389.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1535,
+    "name": "Antti Kangas",
+    "party": "ps",
+    "seat_number": 150,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kangas-Antti-web-1535.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1538,
+    "name": "Sara Seppänen",
+    "party": "ps",
+    "seat_number": 151,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Seppanen-Sara-web-1538.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1536,
+    "name": "Mikko Polvinen",
+    "party": "ps",
+    "seat_number": 152,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Polvinen-Mikko-web-1536.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1410,
+    "name": "Mikko Lundén",
+    "party": "ps",
+    "seat_number": 153,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lunden-Mikko-web-1410.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1530,
+    "name": "Kaisa Garedew",
+    "party": "ps",
+    "seat_number": 154,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Garedew-Kaisa-web-1530.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1522,
+    "name": "Timo Vornanen",
+    "party": "tv",
+    "seat_number": 155,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Vornanen-Timo-web-1522.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911824,
+    "name": "Jessi Jokelainen",
+    "party": "vas",
+    "seat_number": 156,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Jokelainen-Jessi-web-911824.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1497,
+    "name": "Pinja Perholehto",
+    "party": "sd",
+    "seat_number": 157,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Perholehto-Pinja-web-1497.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1496,
+    "name": "Eemeli Peltonen",
+    "party": "sd",
+    "seat_number": 158,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Peltonen-Eemeli-web-1496.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1503,
+    "name": "Saku Nikkanen",
+    "party": "sd",
+    "seat_number": 159,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Nikkanen-Saku-web-1503.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1519,
+    "name": "Anna-Kristiina Mikkonen",
+    "party": "sd",
+    "seat_number": 160,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Mikkonen-Anna-Kristiina-web-1519.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1512,
+    "name": "Ville Merinen",
+    "party": "sd",
+    "seat_number": 161,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Merinen-Ville-web-1512.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1539,
+    "name": "Helena Marttila",
+    "party": "sd",
+    "seat_number": 162,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Marttila-Helena-web-1539.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1401,
+    "name": "Tiina Elo",
+    "party": "vihr",
+    "seat_number": 163,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Elo-Tiina-web-1401.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1449,
+    "name": "Jenni Pitko",
+    "party": "vihr",
+    "seat_number": 164,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Pitko-Jenni-web-1449.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1518,
+    "name": "Vesa Kallio",
+    "party": "kesk",
+    "seat_number": 165,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kallio-Vesa-web-1518.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1532,
+    "name": "Timo Mehtälä",
+    "party": "kesk",
+    "seat_number": 166,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Mehtala-Timo-web-1532.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1468,
+    "name": "Tuomas Kettunen",
+    "party": "kesk",
+    "seat_number": 167,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kettunen-Tuomas-web-1468.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911821,
+    "name": "Christoffer Ingo",
+    "party": "r",
+    "seat_number": 168,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Ingo-Christoffer-web-911821.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1493,
+    "name": "Tere Sammallahti",
+    "party": "kok",
+    "seat_number": 169,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Sammallahti-Tere-web-1493.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1505,
+    "name": "Milla Lahdenperä",
+    "party": "kok",
+    "seat_number": 170,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lahdenpera-Milla-web-1505.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1513,
+    "name": "Aleksi Jäntti",
+    "party": "kok",
+    "seat_number": 171,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Jantti-Aleksi-web-1513.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1491,
+    "name": "Jarno Limnell",
+    "party": "kok",
+    "seat_number": 172,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Limnell-Jarno-web-1491.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1510,
+    "name": "Teemu Kinnari",
+    "party": "kok",
+    "seat_number": 173,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kinnari-Teemu-web-1510.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1504,
+    "name": "Pauli Aalto-Setälä",
+    "party": "kok",
+    "seat_number": 174,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Aalto-Setala-Pauli-web-1504.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1492,
+    "name": "Susanne Päivärinta",
+    "party": "kok",
+    "seat_number": 175,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Paivarinta-Susanne-web-1492.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1537,
+    "name": "Juha Hänninen",
+    "party": "kok",
+    "seat_number": 176,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Hanninen-Juha-web-1537.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1486,
+    "name": "Jarmo Lindberg",
+    "party": "kok",
+    "seat_number": 177,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Lindberg-Jarmo-web-1486.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1500,
+    "name": "Onni Rostila",
+    "party": "ps",
+    "seat_number": 178,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rostila-Onni-web-1500.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1514,
+    "name": "Miko Bergbom",
+    "party": "ps",
+    "seat_number": 179,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Bergbom-Miko-web-1514.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1515,
+    "name": "Joakim Vigelius",
+    "party": "ps",
+    "seat_number": 180,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Vigelius-Joakim-web-1515.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911826,
+    "name": "Merja Rasinkangas",
+    "party": "ps",
+    "seat_number": 181,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Rasinkangas-Merja-web-911826.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911820,
+    "name": "Lotta Hamari",
+    "party": "sd",
+    "seat_number": 182,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Hamari-Lotta-web-911820.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1506,
+    "name": "Juha Viitala",
+    "party": "sd",
+    "seat_number": 183,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Viitala-Juha-web-1506.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1521,
+    "name": "Timo Suhonen",
+    "party": "sd",
+    "seat_number": 184,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Suhonen-Timo-web-1521.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911823,
+    "name": "Alviina Alametsä",
+    "party": "vihr",
+    "seat_number": 185,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Alametsa-Alviina-web-911823.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1489,
+    "name": "Fatim Diarra",
+    "party": "vihr",
+    "seat_number": 186,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Diarra-Fatim-web-1489.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911827,
+    "name": "Mika Riipi",
+    "party": "kesk",
+    "seat_number": 187,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Riipi-Mika-web-911827.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1533,
+    "name": "Olga Oinas-Panuma",
+    "party": "kesk",
+    "seat_number": 188,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Oinas-Panuma-Olga-web-1533.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1524,
+    "name": "Markku Siponen",
+    "party": "kesk",
+    "seat_number": 189,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Siponen-Markku-web-1524.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1328,
+    "name": "Harry Harkimo",
+    "party": "liik",
+    "seat_number": 190,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Harkimo-Harry-web-1328.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911828,
+    "name": "Henrik Vuornos",
+    "party": "kok",
+    "seat_number": 191,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Vuornos-Henrik-web-911828.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911825,
+    "name": "Martin Paasi",
+    "party": "kok",
+    "seat_number": 192,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Paasi-Martin-web-911825.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 911822,
+    "name": "Maaret Castrén",
+    "party": "kok",
+    "seat_number": 193,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Castren-Maaret-web-911822.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1490,
+    "name": "Noora Fagerström",
+    "party": "kok",
+    "seat_number": 194,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Fagerstrom-Noora-web-1490.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1520,
+    "name": "Karoliina Partanen",
+    "party": "kok",
+    "seat_number": 195,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Partanen-Karoliina-web-1520.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1507,
+    "name": "Mari Kaunistola",
+    "party": "kok",
+    "seat_number": 196,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Kaunistola-Mari-web-1507.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1525,
+    "name": "Janne Jukkola",
+    "party": "kok",
+    "seat_number": 197,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Jukkola-Janne-web-1525.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1517,
+    "name": "Oskari Valtola",
+    "party": "kok",
+    "seat_number": 198,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Valtola-Oskari-web-1517.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  },
+  {
+    "politician_id": 1528,
+    "name": "Ville Väyrynen",
+    "party": "kok",
+    "seat_number": 199,
+    "minister": false,
+    "image_url": "https://avoindata.eduskunta.fi/attachment/member/pictures/Vayrynen-Ville-web-1528.jpg",
+    "source": "eduskunta_open_data",
+    "active": true
+  }
+]

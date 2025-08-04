@@ -7,6 +7,7 @@ import sys
 import os
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from typing import List, Optional
+from fastapi.responses import JSONResponse
 from neo4j import AsyncSession
 
 # Add project root to path
@@ -32,19 +33,141 @@ router = APIRouter(
     },
 )
 
+# Place these endpoints BEFORE any dynamic path endpoints like /{politician_id}
+@router.get(
+    "/parties",
+    response_model=List[str],
+    summary="Get all unique political parties",
+    description="Returns a list of all unique political party names in the database, sorted alphabetically."
+)
+async def get_all_parties(
+    session: AsyncSession = Depends(get_db_session)
+):
+    """
+    Returns all unique political party names from Neo4j.
+    """
+    try:
+        query = """
+        MATCH (p:Politician)
+        WHERE p.current_party IS NOT NULL AND p.current_party <> ''
+        RETURN DISTINCT p.current_party AS party
+        ORDER BY party ASC
+        """
+        result = await session.run(query)
+        parties = []
+        async for record in result:
+            if record["party"]:
+                parties.append(record["party"])
+        return parties
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch parties: {str(e)}"
+        )
+
+
 @router.get(
     "/",
     response_model=PoliticianListResponse,
-    summary="List politicians",
-    description="Get a paginated list of politicians with optional filtering"
+    summary="Get all politicians (paginated)",
+    description="Returns a paginated list of all politicians"
 )
 async def list_politicians(
     session: AsyncSession = Depends(get_db_session),
     page: int = Query(1, ge=1, description="Page number"),
-    limit: int = Query(100, ge=1, le=500, description="Items per page"),
+    limit: int = Query(48, ge=1, le=500, description="Items per page"),
     party: Optional[str] = Query(None, description="Filter by political party"),
     active_only: bool = Query(False, description="Show only active politicians")
 ):
+    skip = (page - 1) * limit
+    query = """
+    MATCH (p:Politician)
+    WHERE ($party IS NULL OR p.current_party = $party)
+      AND ($active_only = False OR p.is_active = True)
+    RETURN p.politician_id as id,
+           p.name as name,
+           p.current_party as party,
+           p.constituency as constituency,
+           p.current_position as position,
+           p.is_active as is_active,
+           p.image_url as image_url
+    ORDER BY p.name
+    SKIP $skip
+    LIMIT $limit
+    """
+    count_query = """
+    MATCH (p:Politician)
+    WHERE ($party IS NULL OR p.current_party = $party)
+      AND ($active_only = False OR p.is_active = True)
+    RETURN count(p) AS total
+    """
+    try:
+        result = await session.run(query, {
+            "party": party,
+            "active_only": active_only,
+            "skip": skip,
+            "limit": limit
+        })
+        records = []
+        async for record in result:
+            records.append(record)
+        politicians = []
+        for record in records:
+            politicians.append({
+                "id": record.get("id"),
+                "name": record.get("name"),
+                "party": record.get("party"),
+                "constituency": record.get("constituency"),
+                "position": record.get("position"),
+                "is_active": record.get("is_active"),
+                "image_url": record.get("image_url")
+            })
+        count_result = await session.run(count_query, {
+            "party": party,
+            "active_only": active_only
+        })
+        count_record = await count_result.single()
+        total = count_record["total"] if count_record else 0
+        next_page = f"/politicians/?page={page+1}&limit={limit}" if skip + limit < total else None
+        prev_page = f"/politicians/?page={page-1}&limit={limit}" if page > 1 else None
+        return PoliticianListResponse(
+            page=page,
+            limit=limit,
+            total=total,
+            next_page=next_page,
+            prev_page=prev_page,
+            data=politicians
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch politicians: {str(e)}"
+        )
+
+@router.get(
+    "/count",
+    response_model=int,
+    summary="Get total number of politicians",
+    description="Returns the total number of politicians in the database"
+)
+async def get_total_politician_count(
+    session: AsyncSession = Depends(get_db_session)
+):
+    """
+    Returns the total count of politicians in the database.
+    """
+    try:
+        count_query = """
+        MATCH (p:Politician)
+        RETURN count(p) AS total
+        """
+        result = await session.run(count_query)
+        record = await result.single()
+        total = record["total"] if record else 0
+        return total
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch total politician count: {str(e)}")
+
     """
     Get a paginated list of politicians with optional filtering.
     
@@ -61,13 +184,18 @@ async def list_politicians(
     # Calculate pagination
     skip = (page - 1) * limit
     
-    # Build Cypher query with parameters
+    # Build Cypher query with parameters - fix field names to match database schema
     query = """
     MATCH (p:Politician)
     WHERE 
-        ($party IS NULL OR p.party = $party)
-        AND ($active_only = False OR p.active = True)
-    RETURN p
+        (p.current_party IS NOT NULL)
+    RETURN p.politician_id as id,
+           p.name as name,
+           p.current_party as party,
+           p.constituency as constituency,
+           p.current_position as position,
+           p.is_active as is_active,
+           p.image_url as image_url
     ORDER BY p.name
     SKIP $skip
     LIMIT $limit
@@ -77,26 +205,37 @@ async def list_politicians(
     count_query = """
     MATCH (p:Politician)
     WHERE 
-        ($party IS NULL OR p.party = $party)
-        AND ($active_only = False OR p.active = True)
+        (p.current_party IS NOT NULL)
     RETURN count(p) AS total
     """
     
     try:
         # Run queries
         result = await session.run(query, {
-            "party": party,
-            "active_only": active_only,
             "skip": skip,
             "limit": limit
         })
         
-        politicians = [record["p"] for record in await result.fetch_all()]
+        # Use correct Neo4j async API
+        records = []
+        async for record in result:
+            records.append(record)
         
-        count_result = await session.run(count_query, {
-            "party": party,
-            "active_only": active_only
-        })
+        # Process politician records into proper format
+        politicians = []
+        for record in records:
+            politician = {
+                "id": record.get("id"),
+                "name": record.get("name"),
+                "party": record.get("party"),
+                "constituency": record.get("constituency"),
+                "position": record.get("position"),
+                "years_served": record.get("years_served"),
+                "image_url": record.get("image_url")
+            }
+            politicians.append(politician)
+        
+        count_result = await session.run(count_query)
         count_record = await count_result.single()
         total = count_record["total"] if count_record else 0
         
@@ -127,92 +266,100 @@ async def list_politicians(
             detail=f"Failed to fetch politicians: {str(e)}"
         )
 
+
 @router.get(
-    "/{politician_id}",
-    response_model=PoliticianResponse,
-    summary="Get politician details",
-    description="Get detailed information about a specific politician"
+    "/province/{province_id}",
+    response_model=PoliticianListResponse,
+    summary="Get politicians by province",
+    description="Get politicians from a specific Finnish province/region"
 )
-async def get_politician(
-    politician_id: str = Path(..., description="Politician ID"),
+async def get_politicians_by_province(
+    province_id: str = Path(..., description="Province ID (e.g., 'uusimaa', 'varsinais-suomi')"),
     session: AsyncSession = Depends(get_db_session),
-    include_news: bool = Query(True, description="Include latest news"),
-    include_relationships: bool = Query(False, description="Include relationship data")
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(100, ge=1, le=500, description="Items per page"),
+    active_only: bool = Query(False, description="Show only active politicians")
 ):
     """
-    Get detailed information about a specific politician.
+    Get politicians from a specific Finnish province/region.
     
     Args:
-        politician_id: Politician ID
+        province_id: Province identifier (e.g., 'uusimaa', 'varsinais-suomi')
         session: Neo4j database session
-        include_news: Include latest news about the politician
-        include_relationships: Include politician's relationships
+        page: Page number (1-indexed)
+        limit: Number of items per page
+        active_only: Show only active politicians
         
     Returns:
-        PoliticianResponse: Politician details
+        PoliticianListResponse: List of politicians from the province
     """
+    # Calculate pagination
+    skip = (page - 1) * limit
+    
+    # Build Cypher query with province filter
+    query = """
+    MATCH (p:Politician)
+    WHERE 
+        p.province = $province_id
+        AND ($active_only = False OR p.active = True)
+    RETURN p
+    ORDER BY p.name
+    SKIP $skip
+    LIMIT $limit
+    """
+    
+    # Also get total count for pagination
+    count_query = """
+    MATCH (p:Politician)
+    WHERE 
+        p.province = $province_id
+        AND ($active_only = False OR p.active = True)
+    RETURN count(p) AS total
+    """
+    
     try:
-        # Base query for politician data
-        query = """
-        MATCH (p:Politician {id: $id})
-        RETURN p
-        """
+        # Run queries
+        result = await session.run(query, {
+            "province_id": province_id,
+            "active_only": active_only,
+            "skip": skip,
+            "limit": limit
+        })
         
-        result = await session.run(query, {"id": politician_id})
-        record = await result.single()
+        # Use correct Neo4j async API
+        records = []
+        async for record in result:
+            records.append(record)
+        politicians = [record["p"] for record in records]
         
-        if not record:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Politician with ID {politician_id} not found"
-            )
-            
-        politician = record["p"]
+        count_result = await session.run(count_query, {
+            "province_id": province_id,
+            "active_only": active_only
+        })
+        count_record = await count_result.single()
+        total = count_record["total"] if count_record else 0
         
-        # Get latest news if requested
-        if include_news:
-            news_query = """
-            MATCH (p:Politician {id: $id})-[:MENTIONED_IN]->(n:News)
-            RETURN n
-            ORDER BY n.published_date DESC
-            LIMIT 5
-            """
+        # Build response with pagination
+        next_page = f"/politicians/province/{province_id}?page={page+1}&limit={limit}" if skip + limit < total else None
+        prev_page = f"/politicians/province/{province_id}?page={page-1}&limit={limit}" if page > 1 else None
             
-            news_result = await session.run(news_query, {"id": politician_id})
-            news_records = await news_result.fetch_all()
-            latest_news = [record["n"] for record in news_records]
-            politician["latest_news"] = latest_news
-            
-        # Get relationships if requested
-        if include_relationships:
-            relations_query = """
-            MATCH (p:Politician {id: $id})-[r]-(other:Politician)
-            RETURN type(r) as type, other, r.strength as strength, r.evidence as evidence
-            LIMIT 10
-            """
-            
-            relations_result = await session.run(relations_query, {"id": politician_id})
-            relations_records = await relations_result.fetch_all()
-            
-            relationships = []
-            for record in relations_records:
-                relationships.append({
-                    "type": record["type"],
-                    "politician": record["other"],
-                    "strength": record["strength"],
-                    "evidence": record["evidence"]
-                })
-                
-            politician["relationships"] = relationships
-            
-        return politician
+        if active_only:
+            next_page = f"{next_page}&active_only=true" if next_page else None
+            prev_page = f"{prev_page}&active_only=true" if prev_page else None
         
-    except HTTPException:
-        raise
+        return PoliticianListResponse(
+            page=page,
+            limit=limit,
+            total=total,
+            next_page=next_page,
+            prev_page=prev_page,
+            data=politicians
+        )
+        
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to fetch politician: {str(e)}"
+            detail=f"Failed to fetch politicians for province {province_id}: {str(e)}"
         )
 
 @router.get(
@@ -222,7 +369,8 @@ async def get_politician(
     description="Search for politicians by name or other attributes"
 )
 async def search_politicians(
-    query: str = Query(..., min_length=2, description="Search query"),
+    query: str = Query('', min_length=0, description="Search query (optional)"),
+    party: str = Query(None, description="Party name to filter by (optional)"),
     session: AsyncSession = Depends(get_db_session),
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(100, ge=1, le=500, description="Items per page")
@@ -243,37 +391,53 @@ async def search_politicians(
         # Calculate pagination
         skip = (page - 1) * limit
         
-        # Build case-insensitive search query
-        search_query = """
-        MATCH (p:Politician)
-        WHERE toLower(p.name) CONTAINS toLower($query)
-           OR toLower(p.party) CONTAINS toLower($query)
-           OR toLower(p.title) CONTAINS toLower($query)
-        RETURN p
-        ORDER BY p.name
-        SKIP $skip
-        LIMIT $limit
+        # Build dynamic Cypher WHERE clause
+        where_clauses = []
+        params = {"skip": skip, "limit": limit}
+        # Always provide both parameters to avoid Neo4j ParameterMissing error
+        params["query"] = query.strip() if query else ""
+        params["party"] = party if party else ""
+        if query and len(query.strip()) >= 2:
+            where_clauses.append("(toLower(p.name) CONTAINS toLower($query) OR toLower(p.current_party) CONTAINS toLower($query) OR toLower(p.current_position) CONTAINS toLower($query))")
+        if party:
+            where_clauses.append("toLower(p.current_party) = toLower($party)")
+        cypher_where = ' AND '.join(where_clauses) if where_clauses else '1=1'
+        search_query = f"""
+            MATCH (p:Politician)
+            WHERE {cypher_where}
+            RETURN p
+            ORDER BY p.name
+            SKIP $skip
+            LIMIT $limit
         """
-        
-        # Also get total count for pagination
-        count_query = """
-        MATCH (p:Politician)
-        WHERE toLower(p.name) CONTAINS toLower($query)
-           OR toLower(p.party) CONTAINS toLower($query)
-           OR toLower(p.title) CONTAINS toLower($query)
-        RETURN count(p) AS total
+        count_query = f"""
+            MATCH (p:Politician)
+            WHERE {cypher_where}
+            RETURN count(p) AS total
         """
-        
         # Run queries
-        result = await session.run(search_query, {
-            "query": query,
-            "skip": skip,
-            "limit": limit
-        })
+        result = await session.run(search_query, params)
         
-        politicians = [record["p"] for record in await result.fetch_all()]
+        records = []
+        async for record in result:
+            records.append(record)
+        politicians = []
+        for record in records:
+            p = record["p"]
+            politicians.append({
+                "id": p.get("id") or p.get("politician_id") or "",
+                "name": p.get("name", ""),
+                "party": p.get("party") or p.get("current_party") or "",
+                "title": p.get("title") or p.get("current_position") or "",
+                "province": p.get("province", ""),
+                "constituency": p.get("constituency", ""),
+                "position": p.get("position") or p.get("current_position") or "",
+                "years_served": p.get("years_served", ""),
+                "image_url": p.get("image_url", ""),
+                "bio": p.get("bio", "")
+            })
         
-        count_result = await session.run(count_query, {"query": query})
+        count_result = await session.run(count_query, {"query": params["query"], "party": params["party"]})
         count_record = await count_result.single()
         total = count_record["total"] if count_record else 0
         
@@ -289,6 +453,66 @@ async def search_politicians(
             prev_page=prev_page,
             data=politicians
         )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Search failed: {str(e)}"
+        )
+
+@router.get(
+    "/{politician_id}",
+    response_model=PoliticianResponse,
+    summary="Get politician details",
+    description="Get detailed information about a specific politician"
+)
+async def get_politician(
+    politician_id: str = Path(..., description="Politician ID"),
+    session: AsyncSession = Depends(get_db_session),
+    include_news: bool = Query(True, description="Include latest news"),
+    include_relationships: bool = Query(False, description="Include relationship data")
+):
+    """
+    Search for politicians by name or other attributes.
+    
+    Args:
+        query: Search query string
+        session: Neo4j database session
+        page: Page number
+        limit: Items per page
+        
+    Returns:
+        PoliticianListResponse: List of matching politicians
+    """
+    try:
+        # Fetch politician by ID
+        query = """
+        MATCH (p:Politician)
+        WHERE p.id = $id OR p.politician_id = $id
+        RETURN p
+        """
+        result = await session.run(query, {"id": politician_id})
+        record = await result.single()
+        if not record:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Politician with ID {politician_id} not found"
+            )
+        p = record["p"]
+        politician = {
+            "id": p.get("id") or p.get("politician_id") or "",
+            "name": p.get("name", ""),
+            "party": p.get("party") or p.get("current_party") or "",
+            "title": p.get("title") or p.get("current_position") or "",
+            "province": p.get("province", ""),
+            "constituency": p.get("constituency", ""),
+            "position": p.get("position") or p.get("current_position") or "",
+            "years_served": p.get("years_served", ""),
+            "image_url": p.get("image_url", ""),
+            "bio": p.get("bio", "")
+        }
+        # Optionally fetch news and relationships if requested (add logic here if needed)
+        return politician
         
     except Exception as e:
         raise HTTPException(
@@ -352,7 +576,9 @@ async def get_politician_relationships(
             "limit": limit
         })
         
-        records = await result.fetch_all()
+        records = []
+        async for record in result:
+            records.append(record)
         
         # Transform to response model
         relationships = []

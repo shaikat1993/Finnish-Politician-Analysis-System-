@@ -441,14 +441,28 @@ class CollectorNeo4jBridge:
             'position': politician_data.get('position', '').strip(),
             'constituency': politician_data.get('constituency', '').strip(),
             'bio': politician_data.get('bio', '').strip(),
-            'active': politician_data.get('active', True)
+            'active': politician_data.get('active', True),
+            'image_url': politician_data.get('image_url', '').strip()  # CRITICAL: Preserve image URLs
         }
-        
+
+        # Preserve and validate politician_id
+        pid = politician_data.get('politician_id')
+        if pid is not None:
+            pid_str = str(pid).strip()
+            if pid_str and pid_str.lower() not in ('none', 'null', 'nan'):
+                validated['politician_id'] = pid_str
+            else:
+                self.logger.warning(f"[VALIDATION] Skipping invalid politician_id: {pid} for {politician_data.get('name')}")
+        else:
+            self.logger.warning(f"[VALIDATION] Missing politician_id for {politician_data.get('name')}")
+
         # Add optional fields if present
         for field in ['first_name', 'last_name', 'contact', 'id']:
             if field in politician_data:
                 validated[field] = politician_data[field]
-        
+
+        # Log validated data for debugging
+        self.logger.debug(f"[VALIDATION] Validated politician: name={validated.get('name')}, politician_id={validated.get('politician_id')}")
         return validated
     
     def _validate_article_data(self, article_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -493,7 +507,7 @@ class CollectorNeo4jBridge:
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
-async def run_full_data_ingestion(politician_limit: int = 100, 
+async def run_full_data_ingestion(politician_limit: int = 200, 
                                  article_limit: int = 50) -> Dict[str, Any]:
     """
     Convenience function to run complete data ingestion
@@ -572,7 +586,7 @@ async def main():
     print("=" * 50)
     
     # Run full data ingestion
-    results = await run_full_data_ingestion(politician_limit=20, article_limit=10)
+    results = await run_full_data_ingestion(politician_limit=200, article_limit=10)
     
     print("\n📊 INGESTION RESULTS:")
     print(f"   Politicians: {results['summary']['total_politicians']}")

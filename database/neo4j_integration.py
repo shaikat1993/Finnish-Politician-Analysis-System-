@@ -250,14 +250,28 @@ class DataTransformer:
     @staticmethod
     def transform_politician_data(politician_data: Dict[str, Any], source: str) -> Dict[str, Any]:
         """Transform politician data for Neo4j storage"""
+        # Generate robust politician_id that's never empty - always use our generation logic
+        name = politician_data.get('name', '').strip()
+        
+        # Always generate from name to ensure consistency and avoid parameter issues
+        if name:
+            # Clean name for ID generation
+            clean_name = name.replace(' ', '_').replace('-', '_').replace('.', '').replace(',', '').replace('ä', 'a').replace('ö', 'o').replace('å', 'a')
+            final_id = f"{source}_{clean_name}"
+        else:
+            # Fallback with timestamp to ensure uniqueness
+            import time
+            final_id = f"{source}_politician_{int(time.time())}"
+        
         return {
-            'politician_id': politician_data.get('id') or f"{source}_{politician_data.get('name', '').replace(' ', '_')}",
+            'politician_id': final_id,
             'name': politician_data.get('name', ''),
             'first_name': politician_data.get('first_name', ''),
             'last_name': politician_data.get('last_name', ''),
             'current_party': politician_data.get('party', ''),
             'current_position': politician_data.get('position', ''),
             'constituency': politician_data.get('constituency', ''),
+            'image_url': politician_data.get('image_url', ''),
             'is_active': politician_data.get('active', True),
             'contact_info': json.dumps(politician_data.get('contact', {})),
             'biography': politician_data.get('bio', ''),
@@ -328,18 +342,28 @@ class Neo4jWriter:
         """Create or update politician node"""
         transformed_data = self.transformer.transform_politician_data(politician_data, source)
         
+        # Use proper parameterized query with robust politician_id
         query = """
         MERGE (p:Politician {politician_id: $politician_id})
-        SET p += $properties
-        RETURN p.politician_id as politician_id
+        SET p.name = $name,
+            p.current_party = $current_party,
+            p.constituency = $constituency,
+            p.current_position = $current_position,
+            p.image_url = $image_url,
+            p.is_active = $is_active,
+            p.first_name = $first_name,
+            p.last_name = $last_name,
+            p.contact_info = $contact_info,
+            p.biography = $biography,
+            p.data_sources = $data_sources,
+            p.created_at = $created_at,
+            p.updated_at = $updated_at
+        RETURN p.politician_id as politician_id, p.image_url as image_url
         """
         
         result = await self.connection_manager.execute_query(
-            query, 
-            {
-                'politician_id': transformed_data['politician_id'],
-                'properties': transformed_data
-            }
+            query,
+            transformed_data
         )
         
         return result[0]['politician_id'] if result else None
@@ -392,32 +416,73 @@ class Neo4jWriter:
         return len(result) > 0
     
     async def batch_create_politicians(self, politicians_data: List[Dict[str, Any]], source: str) -> List[str]:
-        """Batch create politicians for high performance"""
+        """Batch create politicians for high performance (guaranteed unique IDs, robust error handling, and image/province correctness)"""
         batch_size = 100
         created_ids = []
-        
-        for i in range(0, len(politicians_data), batch_size):
-            batch = politicians_data[i:i + batch_size]
-            transformed_batch = [
-                self.transformer.transform_politician_data(p, source) 
-                for p in batch
-            ]
-            
+        logger = self.logger
+        logger.info(f"[BATCH IMPORT] Received {len(politicians_data)} politicians for import from source: {source}")
+
+        # Log incoming politician IDs for debugging
+        logger.info(f"[DEBUG] Received {len(politicians_data)} politicians. Sample IDs: {[p.get('politician_id') for p in politicians_data[:10]]}")
+        # Deduplicate input by politician_id only (guaranteed unique, robust to int/str)
+        deduped_dict = {}
+        for p in politicians_data:
+            pid = p.get('politician_id', '')
+            if pid is None:
+                continue
+            pid_str = str(pid).strip()
+            if not pid_str or pid_str.lower() in ('none', 'null', 'nan'):
+                logger.warning(f"[SKIP] Invalid politician_id: {pid} in {p}")
+                continue
+            deduped_dict[pid_str] = p
+        deduped = list(deduped_dict.values())
+        logger.info(f"[BATCH IMPORT] Deduplicated to {len(deduped)} unique politicians by politician_id. Sample: {[p.get('politician_id') for p in deduped[:10]]}")
+
+        for i in range(0, len(deduped), batch_size):
+            batch = deduped[i:i + batch_size]
+            transformed_batch = []
+            for p in batch:
+                t = self.transformer.transform_politician_data(p, source)
+                # Guarantee unique, non-empty ID
+                if not t['politician_id'] or not t['name']:
+                    logger.warning(f"[SKIP] Empty ID or name: {t}")
+                    continue
+                transformed_batch.append(t)
+            if not transformed_batch:
+                logger.warning(f"[BATCH {i//batch_size+1}] No valid politicians in batch, skipping.")
+                continue
+            logger.info(f"[BATCH {i//batch_size+1}] Inserting {len(transformed_batch)} politicians. Sample: {[t['politician_id'] for t in transformed_batch[:3]]}")
+
             query = """
             UNWIND $politicians as politician
             MERGE (p:Politician {politician_id: politician.politician_id})
-            SET p += politician
-            RETURN p.politician_id as politician_id
+            SET p.name = politician.name,
+                p.current_party = politician.current_party,
+                p.constituency = politician.constituency,
+                p.current_position = politician.current_position,
+                p.image_url = politician.image_url,
+                p.is_active = politician.is_active,
+                p.first_name = politician.first_name,
+                p.last_name = politician.last_name,
+                p.contact_info = politician.contact_info,
+                p.biography = politician.biography,
+                p.data_sources = politician.data_sources,
+                p.created_at = politician.created_at,
+                p.updated_at = politician.updated_at
+            RETURN p.politician_id as politician_id, p.image_url as image_url, p.constituency as constituency
             """
-            
-            result = await self.connection_manager.execute_query(
-                query,
-                {'politicians': transformed_batch}
-            )
-            
-            created_ids.extend([r['politician_id'] for r in result])
-        
+            try:
+                result = await self.connection_manager.execute_query(
+                    query,
+                    {'politicians': transformed_batch}
+                )
+                logger.info(f"[BATCH {i//batch_size+1}] Created {len(result)} politicians. Sample: {[r['politician_id'] for r in result[:3]]}")
+                created_ids.extend([r['politician_id'] for r in result])
+            except Exception as e:
+                logger.error(f"[BATCH {i//batch_size+1}] ERROR: {str(e)}")
+        logger.info(f"[BATCH IMPORT] Total politicians created: {len(created_ids)}")
         return created_ids
+
     
     async def close(self):
         """Close the writer"""

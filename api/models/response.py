@@ -34,12 +34,19 @@ class PoliticianBase(BaseModel):
     name: str
     party: Optional[str] = None
     title: Optional[str] = None
+    province: Optional[str] = None
+    constituency: Optional[str] = None
+    position: Optional[str] = None
+    years_served: Optional[str] = None
+    image_url: Optional[str] = None
+    bio: Optional[str] = None
 
 class PoliticianResponse(PoliticianBase):
     """Full politician response model"""
-    image_url: Optional[str] = None
     election_history: Optional[List[Dict[str, Any]]] = None
     latest_news: Optional[List[Dict[str, Any]]] = None
+    voting_record: Optional[List[Dict[str, Any]]] = None
+    relationships: Optional[List[Dict[str, Any]]] = None
     
     class Config:
         schema_extra = {

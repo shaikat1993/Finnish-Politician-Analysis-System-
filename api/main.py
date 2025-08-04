@@ -44,12 +44,15 @@ def create_app() -> FastAPI:
     )
     
     # Register routes
-    from api.routers import politicians, news, analysis, health
+    from api.routers import politicians, news, analysis, health, provinces
+    from api.core.config import Settings
+    settings = Settings()
     
-    app.include_router(health.router)
-    app.include_router(politicians.router)
-    app.include_router(news.router)
-    app.include_router(analysis.router)
+    app.include_router(health.router, prefix=settings.API_V1_STR)
+    app.include_router(politicians.router, prefix=settings.API_V1_STR)
+    app.include_router(news.router, prefix=settings.API_V1_STR)
+    app.include_router(analysis.router, prefix=settings.API_V1_STR)
+    app.include_router(provinces.router, prefix=settings.API_V1_STR)
     
     return app
 

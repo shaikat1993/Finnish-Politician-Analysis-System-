@@ -187,15 +187,32 @@ class APIConfig:
         requires_auth=False
     )
     
+    STATISTICS_FINLAND = APIEndpoint(
+        base_url="https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin",
+        endpoints={
+            "regions": "/vrm/vaerak/statfin_vaerak_pxt_11ra.px",
+            "population": "/vrm/vaerak/statfin_vaerak_pxt_11ra.px",
+            "municipalities": "/kuntien_avainluvut/2023/statfin_kuntien_avainluvut_pxt_12f7.px",
+            "administrative": "/vrm/vaerak/statfin_vaerak_pxt_11ra.px"
+        },
+        headers={
+            'User-Agent': 'FPAS-StatsCollector/1.0',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        rate_limit=30,  # Conservative rate limit for government API
+        requires_auth=False
+    )
+    
     # ===========================================
     # RSS FEEDS CONFIGURATION
     # ===========================================
     
     RSS_FEEDS = {
         'yle': [
-            RSSFeed('YLE Politiikka', 'https://feeds.yle.fi/uutiset/v1/majorNews.rss', 'politiikka'),
-            RSSFeed('YLE Kotimaa', 'https://feeds.yle.fi/uutiset/v1/recent.rss', 'kotimaa'),
-            RSSFeed('YLE Uutiset', 'https://feeds.yle.fi/uutiset/v1/recent.rss', 'uutiset')
+            RSSFeed('YLE Politiikka', 'https://yle.fi/rss/t/18-220306/fi', 'politiikka'),
+            RSSFeed('YLE Kotimaa', 'https://yle.fi/rss/t/18-34837/fi', 'kotimaa'),
+            RSSFeed('YLE Uutiset', 'https://yle.fi/rss/uutiset/tuoreimmat', 'uutiset')
         ],
         'helsingin_sanomat': [
             RSSFeed('HS Politiikka', 'https://www.hs.fi/rss/politiikka.xml', 'politiikka'),
@@ -210,17 +227,19 @@ class APIConfig:
             RSSFeed('IL Uutiset', 'https://www.iltalehti.fi/rss/uutiset.xml', 'uutiset'),
             RSSFeed('IL Tuoreimmat', 'https://www.iltalehti.fi/rss/tuoreimmat.xml', 'tuoreimmat')
         ],
+        # MTV Uutiset has deprecated their public RSS feeds - using API endpoints instead
         'mtv_uutiset': [
             RSSFeed('MTV Politiikka', 'https://www.mtvuutiset.fi/api/feed/rss/politiikka', 'politiikka'),
             RSSFeed('MTV Kotimaa', 'https://www.mtvuutiset.fi/api/feed/rss/kotimaa', 'kotimaa'),
             RSSFeed('MTV Uutiset', 'https://www.mtvuutiset.fi/api/feed/rss/uutiset', 'uutiset'),
             RSSFeed('MTV Tuoreimmat', 'https://www.mtvuutiset.fi/api/feed/rss/tuoreimmat', 'tuoreimmat')
         ],
+        # Kauppalehti has deprecated their public RSS feeds - using API endpoints instead
         'kauppalehti': [
-            RSSFeed('KL Politiikka', 'https://www.kauppalehti.fi/rss/politiikka', 'politiikka'),
-            RSSFeed('KL Talous', 'https://www.kauppalehti.fi/rss/talous', 'talous'),
-            RSSFeed('KL Uutiset', 'https://www.kauppalehti.fi/rss/uutiset', 'uutiset'),
-            RSSFeed('KL Pääkirjoitukset', 'https://www.kauppalehti.fi/rss/paakirjoitukset', 'paakirjoitukset')
+            RSSFeed('KL Politiikka', 'https://www.kauppalehti.fi/api/feed/rss/politiikka', 'politiikka'),
+            RSSFeed('KL Talous', 'https://www.kauppalehti.fi/api/feed/rss/talous', 'talous'),
+            RSSFeed('KL Uutiset', 'https://www.kauppalehti.fi/api/feed/rss/uutiset', 'uutiset'),
+            RSSFeed('KL Pääkirjoitukset', 'https://www.kauppalehti.fi/api/feed/rss/paakirjoitukset', 'paakirjoitukset')
         ]
     }
     
@@ -305,7 +324,7 @@ class APIConfig:
         return [
             'eduskunta', 'vaalikone', 'kuntaliitto',
             'yle', 'helsingin_sanomat', 'iltalehti', 'mtv_uutiset', 'kauppalehti',
-            'wikipedia'
+            'wikipedia', 'statistics_finland'
         ]
     
     @classmethod
@@ -318,5 +337,3 @@ class APIConfig:
         validation_results['YLE_API_KEY'] = bool(yle_key and yle_key.strip())
         
         return validation_results
-
-

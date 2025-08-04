@@ -12,19 +12,38 @@ from neo4j import AsyncDriver, AsyncSession
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-# Import existing Neo4j connection manager from the project
-from database.neo4j_connection import get_neo4j_connection
+# Import our proven working Neo4j connection manager
+from database.neo4j_integration import Neo4jConnectionManager
+
+# Global connection manager instance
+_connection_manager = None
+
+async def get_connection_manager() -> Neo4jConnectionManager:
+    """
+    Get or create the Neo4j connection manager instance
+    
+    Returns:
+        Neo4jConnectionManager: Connection manager instance
+    """
+    global _connection_manager
+    
+    if _connection_manager is None:
+        _connection_manager = Neo4jConnectionManager()
+        await _connection_manager.initialize()
+    
+    return _connection_manager
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """
-    Get a Neo4j database session using the existing connection manager.
+    Get a Neo4j database session using our proven working connection manager.
     This dependency can be injected into API endpoints.
     
     Returns:
         AsyncGenerator[AsyncSession, None]: Neo4j async session
     """
     try:
-        async with get_neo4j_connection() as session:
+        connection_manager = await get_connection_manager()
+        async with connection_manager.session() as session:
             yield session
     except Exception as e:
         raise HTTPException(
