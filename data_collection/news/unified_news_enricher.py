@@ -1,8 +1,10 @@
 from typing import List, Dict, Any
 from datetime import datetime
 import logging
+from database.neo4j_integration import RelationshipType
 
 from .yle_news_collector import YleNewsCollector
+from .yle_web_scraper_collector import YleWebScraperCollector
 from .helsingin_sanomat_collector import HelsingingSanomatCollector
 from .iltalehti_collector import IltalehtCollector
 from .mtv_uutiset_collector import MTVUutisetCollector
@@ -16,7 +18,7 @@ class UnifiedNewsEnricher:
         self.logger = logging.getLogger("unified_news_enricher")
         if collectors is None:
             collectors = [
-                YleNewsCollector(),
+                YleWebScraperCollector(),
                 HelsingingSanomatCollector(),
                 IltalehtCollector(),
                 MTVUutisetCollector(),
@@ -24,6 +26,7 @@ class UnifiedNewsEnricher:
             ]
         self.collectors = collectors
         self.neo4j_writer = neo4j_writer  # Should be an instance of Neo4jWriter
+        self.logger.info(f"Initialized with collectors: {[c.__class__.__name__ for c in self.collectors]}")
 
     async def enrich_and_store_politician_news(self, politician_id: str, politician_name: str, start_date: str = None, end_date: str = None, limit: int = 50) -> list:
         all_articles = []
@@ -46,9 +49,9 @@ class UnifiedNewsEnricher:
                 if article_id:
                     # Relationship: (:Politician)-[:MENTIONS]->(:Article)
                     await self.neo4j_writer.create_relationship(
-                        from_id=politician_id,
-                        to_id=article_id,
-                        relationship_type=getattr(self.neo4j_writer, 'RelationshipType', None) or 'MENTIONS',
+                        politician_id=politician_id,
+                        article_url=article.get('url', ''),
+                        relationship_type=RelationshipType.MENTIONS,
                         properties={}
                     )
             except Exception as e:
@@ -67,8 +70,8 @@ class UnifiedNewsEnricher:
         seen = set()
         deduped = []
         for article in articles:
-            key = (article.get('title', '').strip().lower(), article.get('url', '').strip())
-            if key not in seen:
-                seen.add(key)
+            url = article.get('url', '').strip().lower()
+            if url and url not in seen:
+                seen.add(url)
                 deduped.append(article)
         return deduped

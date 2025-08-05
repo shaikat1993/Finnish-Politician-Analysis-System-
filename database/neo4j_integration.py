@@ -12,6 +12,7 @@ from dataclasses import dataclass, asdict
 import json
 import time
 from enum import Enum
+import hashlib
 
 from neo4j import AsyncGraphDatabase, AsyncSession, AsyncTransaction
 from neo4j.exceptions import ServiceUnavailable, TransientError, ClientError
@@ -284,7 +285,7 @@ class DataTransformer:
     def transform_article_data(article_data: Dict[str, Any], source: str) -> Dict[str, Any]:
         """Transform news article data for Neo4j storage"""
         return {
-            'article_id': article_data.get('id') or f"{source}_{hash(article_data.get('url', ''))}",
+            'article_id': article_data.get('id') or (hashlib.sha256(article_data.get('url', '').strip().lower().encode('utf-8')).hexdigest() if article_data.get('url') else None),
             'title': article_data.get('title', ''),
             'content': article_data.get('content', ''),
             'summary': article_data.get('summary', ''),
@@ -373,7 +374,7 @@ class Neo4jWriter:
         transformed_data = self.transformer.transform_article_data(article_data, source)
         
         query = """
-        MERGE (a:Article {article_id: $article_id})
+        MERGE (a:Article {url: $url})
         SET a += $properties
         RETURN a.article_id as article_id
         """
@@ -381,38 +382,42 @@ class Neo4jWriter:
         result = await self.connection_manager.execute_query(
             query,
             {
-                'article_id': transformed_data['article_id'],
+                'url': transformed_data['url'],
                 'properties': transformed_data
             }
         )
         
         return result[0]['article_id'] if result else None
     
-    async def create_relationship(self, 
-                                from_id: str, 
-                                to_id: str, 
-                                relationship_type: RelationshipType,
-                                properties: Dict[str, Any] = None) -> bool:
-        """Create relationship between entities"""
+    async def create_relationship(
+        self,
+        politician_id: str,
+        article_url: str,
+        relationship_type: RelationshipType,
+        properties: Dict[str, Any] = None
+    ) -> bool:
+        """Create relationship between Politician and Article"""
         properties = properties or {}
         properties['created_at'] = datetime.now().isoformat()
-        
+
+        self.logger.info(
+            f"Creating relationship {relationship_type.value} between Politician(id={politician_id}) and Article(url={article_url})"
+        )
+
         query = f"""
-        MATCH (from {{politician_id: $from_id}}), (to {{politician_id: $to_id}})
-        MERGE (from)-[r:{relationship_type.value}]->(to)
+        MATCH (p:Politician {{id: $politician_id}}), (a:Article {{url: $article_url}})
+        MERGE (p)-[r:{relationship_type.value}]->(a)
         SET r += $properties
         RETURN r
         """
-        
         result = await self.connection_manager.execute_query(
             query,
             {
-                'from_id': from_id,
-                'to_id': to_id,
+                'politician_id': politician_id,
+                'article_url': article_url,
                 'properties': properties
             }
         )
-        
         return len(result) > 0
     
     async def batch_create_politicians(self, politicians_data: List[Dict[str, Any]], source: str) -> List[str]:

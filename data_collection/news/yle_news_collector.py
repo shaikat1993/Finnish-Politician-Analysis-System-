@@ -49,8 +49,9 @@ class YleNewsCollector(NewsCollector):
         load_dotenv()
         
         # Use provided credentials or load from environment
-        self.app_id = app_id or os.getenv('YLE_APP_ID')
-        self.app_key = app_key or os.getenv('YLE_APP_KEY')
+        # Use user-provided Yle API keys directly for now
+        self.app_id = "1505ae5c88646c2dc2395d482b82a0d9"
+        self.app_key = "b350a8b"
         
         if not self.app_id or not self.app_key:
             raise ValueError("YLE API credentials (app_id and app_key) are required")
@@ -153,15 +154,29 @@ class YleNewsCollector(NewsCollector):
             query_params["endtime"] = end_date
         
         try:
-            response = self.make_request('articles', params=query_params)
+            # Use Yle programs/items endpoint for news search
+            response = self.make_request('contents', params=query_params)
             data = response.json()
             articles = []
             
             for item in data.get("data", []):
-                article = self._parse_article(item)
-                if article:
+                # Compose article dict from Yle item structure
+                title = item.get('title', {}).get('fi') or item.get('title', '')
+                url = f"https://areena.yle.fi/{item.get('id', '')}" if item.get('id') else ''
+                published = None
+                if item.get('publicationEvent') and len(item['publicationEvent']) > 0:
+                    published = item['publicationEvent'][0].get('startTime')
+                article = {
+                    'title': title,
+                    'url': url,
+                    'published_date': published,
+                    'source': 'yle',
+                    'raw': item
+                }
+                if title and url:
                     articles.append(article)
-            
+            if not articles:
+                self.logger.warning(f"No articles found, raw Yle response: {data}")
             self.logger.info(f"Found {len(articles)} articles about {politician_name}")
             return articles
             

@@ -90,6 +90,20 @@ class AnalysisDashboard:
                 if wiki_url:
                     st.markdown(f"🔗 [View Wikipedia Page]({wiki_url})")
 
+        # --- NEWS ---
+        news = politician_details.get("news", [])
+        if news:
+            st.subheader("📰 Latest News")
+            for article in news:
+                title = article.get("title", "Untitled")
+                url = article.get("url", "")
+                source = article.get("source", "")
+                date = article.get("published_at", "")
+                if url:
+                    st.markdown(f"• [{title}]({url})  <sub>{source} | {date}</sub>", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"• {title}  <sub>{source} | {date}</sub>", unsafe_allow_html=True)
+
         # --- LINKS ---
         links = politician_details.get("links", [])
         if links:

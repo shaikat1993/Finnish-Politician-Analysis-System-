@@ -13,12 +13,8 @@ from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 
 from .agents import (
-    DataCollectionAgent,
     AnalysisAgent,
-    RelationshipAgent,
-    StorageAgent,
-    QueryAgent,
-    create_all_agents
+    QueryAgent
 )
 from .memory.shared_memory import SharedAgentMemory
 
@@ -33,13 +29,7 @@ class AgentOrchestrator:
     - Specialized LangChain agents for different tasks
     - Distributed coordination through shared memory
     - Fault tolerance and error recovery
-    - Complex multi-step workflows
-    
-    Architecture:
-    - DataCollectionAgent: Handles all data collection operations
     - AnalysisAgent: Performs content analysis and insights
-    - RelationshipAgent: Extracts and analyzes relationships
-    - StorageAgent: Manages Neo4j and vector database storage
     - QueryAgent: Handles all query operations
     - Shared Memory: Cross-agent state and communication
     """
@@ -79,10 +69,10 @@ class AgentOrchestrator:
             
             # Initialize all specialized agents
             openai_api_key = os.getenv("OPENAI_API_KEY")
-            self.agents = create_all_agents(
-                shared_memory=self.shared_memory,
-                openai_api_key=openai_api_key
-            )
+            self.agents = {
+                "analysis": AnalysisAgent(shared_memory=self.shared_memory, openai_api_key=openai_api_key),
+                "query": QueryAgent(shared_memory=self.shared_memory, openai_api_key=openai_api_key)
+            }
             
             self.is_initialized = True
             self.logger.info(f"AgentOrchestrator initialization completed with {len(self.agents)} specialized agents")
@@ -101,10 +91,8 @@ class AgentOrchestrator:
         Execute intelligent data ingestion workflow using specialized agents
         
         This workflow demonstrates the power of the specialized agent architecture:
-        1. DataCollectionAgent gathers data from multiple sources
-        2. AnalysisAgent analyzes the collected content
-        3. RelationshipAgent extracts relationships between entities
-        4. StorageAgent stores everything in Neo4j and vector databases
+        1. AnalysisAgent analyzes the collected content
+        2. StorageAgent stores everything in Neo4j and vector databases
         """
         try:
             if not self.is_initialized:
@@ -237,16 +225,19 @@ class AgentOrchestrator:
             
             # Execute through QueryAgent
             query_agent = self.agents["query"]
-            
-            # Determine query type and route appropriately
-            if "politician" in query.lower():
-                result = await query_agent.search_politicians(query)
-            elif "news" in query.lower():
-                result = await query_agent.search_news(query)
-            elif "relationship" in query.lower() or "connection" in query.lower():
-                result = await query_agent.find_relationships(query)
-            else:
-                result = await query_agent.semantic_search(query)
+
+            # Always include selected politician context if present
+            politician_context = None
+            if context and "selected_politician" in context:
+                politician_context = context["selected_politician"]
+
+            # Combine query and context for the agent
+            agent_input = query
+            if politician_context:
+                agent_input = f"[Politician: {politician_context}] {query}"
+
+            # Always use semantic_search for general questions, passing both query and context
+            result = await query_agent.semantic_search(agent_input)
             
             # Update query status
             await self.shared_memory.store_memory(

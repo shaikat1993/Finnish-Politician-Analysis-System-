@@ -38,6 +38,9 @@ class IltalehtCollector(NewsCollector):
         # Use centralized RSS feeds configuration
         self.rss_feeds = {feed.category: feed.url for feed in APIConfig.RSS_FEEDS['iltalehti']}
 
+    def get_base_url(self) -> str:
+        return "https://www.iltalehti.fi"
+
     def collect_data(self, **kwargs) -> List[Dict[str, Any]]:
         """Implement abstract method from base class"""
         limit = kwargs.get('limit', 20)
@@ -103,9 +106,15 @@ class IltalehtCollector(NewsCollector):
             self.logger.error(f"Error searching articles: {str(e)}")
             return []
 
-    def get_politician_articles(self, politician_name: str, limit: int = 20) -> List[IltalehtArticle]:
-        """Get articles mentioning a specific politician"""
-        return self.search_articles(politician_name, limit)
+    def get_politician_articles(self, politician_name: str, start_date: str = None, end_date: str = None, limit: int = 20) -> list:
+        """Get articles mentioning a specific politician, always returns list of dicts."""
+        try:
+            articles = self.search_articles(politician_name, limit)
+            dicts = [a.__dict__ if hasattr(a, '__dict__') else a for a in articles]
+            return dicts
+        except Exception as e:
+            self.logger.error(f"get_politician_articles error: {e}")
+            return []
 
     def _parse_rss_entry(self, entry, category: str) -> Optional[IltalehtArticle]:
         """Parse RSS feed entry"""

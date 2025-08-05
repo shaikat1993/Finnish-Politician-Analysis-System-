@@ -8,13 +8,30 @@ import asyncio
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
+# Minimal AnalysisTool implementation to unblock agent system
+try:
+    from langchain.tools import BaseTool
+except ImportError:
+    BaseTool = object
+
+class AnalysisTool(BaseTool):
+    name: str = "AnalysisTool"
+    description: str  = "Performs basic analysis (echoes input for test purposes)"
+
+    def _run(self, input: str) -> str:
+        return f"[AnalysisTool] Echo: {input}"
+
+    async def _arun(self, input: str) -> str:
+        return self._run(input)
+
+
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
-from ..tools.coordination_tools import AnalysisTool
+
 from ..memory.shared_memory import SharedAgentMemory
 
 class AnalysisAgent:

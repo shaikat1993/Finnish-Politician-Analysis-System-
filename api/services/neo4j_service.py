@@ -88,7 +88,7 @@ class Neo4jService:
             "limit": limit
         })
         
-        politicians = [record["p"] for record in await result.fetch_all()]
+        politicians = [record["p"] for record in [record async for record in result]]
         
         count_result = await self.session.run(count_query, {
             "party": party,
@@ -212,7 +212,7 @@ class Neo4jService:
             "limit": limit
         })
         
-        politicians = [dict(record["p"]) for record in await result.fetch_all()]
+        politicians = [dict(record["p"]) for record in [record async for record in result]]
         
         count_result = await self.session.run(count_query, {"query": query})
         count_record = await count_result.single()
@@ -262,7 +262,7 @@ class Neo4jService:
             "limit": limit
         })
         
-        news_articles = [dict(record["n"]) for record in await result.fetch_all()]
+        news_articles = [dict(record["n"]) for record in [record async for record in result]]
         
         count_result = await self.session.run(count_query, {"source": source})
         count_record = await count_result.single()
@@ -318,7 +318,7 @@ class Neo4jService:
             "limit": limit
         })
         
-        news_articles = [dict(record["n"]) for record in await result.fetch_all()]
+        news_articles = [dict(record["n"]) for record in [record async for record in result]]
         
         count_result = await self.session.run(count_query, {"id": politician_id})
         count_record = await count_result.single()

@@ -92,7 +92,7 @@ async def list_news_articles(
             "limit": limit
         })
         
-        news_articles = [record["n"] for record in await result.fetch_all()]
+        news_articles = [record["n"] for record in [record async for record in result]]
         
         count_result = await session.run(count_query, {
             "source": source,
@@ -248,7 +248,7 @@ async def search_news(
             "limit": limit
         })
         
-        news_articles = [record["n"] for record in await result.fetch_all()]
+        news_articles = [record["n"] for record in [record async for record in result]]
         
         count_result = await session.run(count_query, {"query": query})
         count_record = await count_result.single()
@@ -334,7 +334,7 @@ async def get_news_by_politician(
             "limit": limit
         })
         
-        news_articles = [record["n"] for record in await result.fetch_all()]
+        news_articles = [record["n"] for record in [record async for record in result]]
         
         count_result = await session.run(count_query, {"id": politician_id})
         count_record = await count_result.single()

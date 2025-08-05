@@ -195,8 +195,12 @@ async def run_custom_analysis(
             "detailed": detailed
         }
         
-        # Run the analysis using the supervisor agent
-        result = await supervisor_agent.analyze_query(request)
+        # Run the analysis using the orchestrator (chat/QA)
+        result = await supervisor_agent.process_user_query(
+            query=request["query"],
+            context={"selected_politician": request["context_ids"][0] if request["context_ids"] else None,
+                    "detailed": request.get("detailed", False)}
+        )
         
         # Update status to completed
         processing_time = time.time() - analysis_results[analysis_id]["start_time"]

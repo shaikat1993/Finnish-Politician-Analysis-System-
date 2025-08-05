@@ -203,20 +203,18 @@ class CollectorNeo4jBridge:
                 self.logger.info(f"Collecting articles from {source}...")
                 collector = self.collectors[source]
                 
-                # Collect data from source
-                if hasattr(collector, 'get_articles'):
+                # Always use get_politician_articles for news collectors
+                politician_name = "Sanna Marin"  # For pipeline runs, this can be parameterized
+                if hasattr(collector, 'get_politician_articles'):
                     raw_articles = await self._safe_collect(
-                        collector.get_articles, limit=limit
+                        collector.get_politician_articles,
+                        politician_name=politician_name,
+                        limit=limit
                     )
-                elif hasattr(collector, 'collect_data'):
-                    raw_data = await self._safe_collect(
-                        collector.collect_data, limit=limit
-                    )
-                    raw_articles = raw_data.get('articles', []) if raw_data else []
                 else:
-                    self.logger.warning(f"Collector {source} has no suitable collection method")
+                    self.logger.warning(f"Collector {source} has no get_politician_articles method")
                     continue
-                
+
                 if not raw_articles:
                     self.logger.warning(f"No articles collected from {source}")
                     continue

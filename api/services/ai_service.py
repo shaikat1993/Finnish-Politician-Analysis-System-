@@ -13,13 +13,10 @@ import logging
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # Import from existing AI pipeline module
-from ai_pipeline.agents.supervisor_agent import SupervisorAgent
+from ai_pipeline.agent_orchestrator import AgentOrchestrator
 from ai_pipeline.memory.shared_memory import SharedMemory
 from ai_pipeline.tools.coordination_tools import (
-    DataCollectionTool,
     AnalysisTool,
-    RelationshipTool,
-    StorageTool,
     QueryTool
 )
 
@@ -30,13 +27,13 @@ class AIPipelineService:
     
     def __init__(self):
         """Initialize AI pipeline service"""
-        self._supervisor_agent = None
+        self._orchestrator = None
         self._shared_memory = None
         self._tools = {}
     
     async def _ensure_initialized(self):
         """Ensure AI pipeline components are initialized"""
-        if not self._supervisor_agent:
+        if not self._orchestrator:
             try:
                 self._shared_memory = SharedMemory()
                 
@@ -45,15 +42,11 @@ class AIPipelineService:
                     "data_collection": DataCollectionTool(self._shared_memory),
                     "analysis": AnalysisTool(self._shared_memory),
                     "relationship": RelationshipTool(self._shared_memory),
-                    "storage": StorageTool(self._shared_memory),
-                    "query": QueryTool(self._shared_memory)
+                    "storage": StorageTool(self._shared_memory)
                 }
                 
-                # Initialize supervisor agent with all tools
-                self._supervisor_agent = SupervisorAgent(
-                    tools=list(self._tools.values()),
-                    shared_memory=self._shared_memory
-                )
+                # Initialize orchestrator
+                self._orchestrator = AgentOrchestrator()
                 
                 logger.info("AI pipeline service initialized successfully")
                 
@@ -167,7 +160,7 @@ class AIPipelineService:
             }
             
             # Use the supervisor agent for complex queries
-            response = await self._supervisor_agent.run(request["query"], request["context"])
+            response = await self._orchestrator.process_user_query(request["query"], request["context"])
             
             # Process and structure the response
             result = {

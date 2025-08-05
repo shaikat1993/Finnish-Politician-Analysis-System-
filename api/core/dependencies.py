@@ -77,8 +77,8 @@ async def get_ai_pipeline_service():
         SupervisorAgent: AI pipeline supervisor agent
     """
     try:
-        from ai_pipeline.agents.supervisor_agent import SupervisorAgent
-        return SupervisorAgent()
+        from ai_pipeline.agent_orchestrator import AgentOrchestrator
+        return AgentOrchestrator()
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

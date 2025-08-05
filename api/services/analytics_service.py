@@ -57,7 +57,7 @@ class AnalyticsService:
         """
         
         result = await self.session.run(query, {"politician_ids": politician_ids})
-        records = await result.fetch_all()
+        records = [record async for record in result]
         
         # Format network data
         nodes = {}
@@ -214,7 +214,7 @@ class AnalyticsService:
         """
         
         result = await self.session.run(query, {"limit": limit})
-        records = await result.fetch_all()
+        records = [record async for record in result]
         
         sentiment_data = []
         for record in records:
@@ -253,7 +253,7 @@ class AnalyticsService:
         """
         
         result = await self.session.run(query, {"days": days, "limit": limit})
-        records = await result.fetch_all()
+        records = [record async for record in result]
         
         topics = []
         for record in records:
