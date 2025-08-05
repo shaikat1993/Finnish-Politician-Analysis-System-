@@ -534,28 +534,17 @@ async def get_politician_relationships(
 ):
     """
     Get relationships between a politician and others.
-    
-    Args:
-        politician_id: Politician ID
-        session: Neo4j database session
-        relationship_type: Filter by specific relationship type
-        limit: Maximum number of relationships to return
-        
-    Returns:
-        List[RelationshipResponse]: List of political relationships
     """
     try:
         # Check if politician exists
         check_query = "MATCH (p:Politician {id: $id}) RETURN p"
         check_result = await session.run(check_query, {"id": politician_id})
         check_record = await check_result.single()
-        
         if not check_record:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Politician with ID {politician_id} not found"
             )
-        
         # Build relationship query based on filters
         if relationship_type:
             relationship_query = f"""
@@ -569,23 +558,17 @@ async def get_politician_relationships(
             RETURN p1, p2, type(r) as type, r.strength as strength, r.evidence as evidence
             LIMIT $limit
             """
-        
-        # Execute query
         result = await session.run(relationship_query, {
             "id": politician_id,
             "limit": limit
         })
-        
         records = []
         async for record in result:
             records.append(record)
-        
-        # Transform to response model
         relationships = []
         for record in records:
             p1 = record["p1"]
             p2 = record["p2"]
-            
             relationships.append(RelationshipResponse(
                 source_id=p1["id"],
                 source_name=p1["name"],
@@ -595,9 +578,7 @@ async def get_politician_relationships(
                 strength=record["strength"],
                 evidence=record["evidence"]
             ))
-            
         return relationships
-        
     except HTTPException:
         raise
     except Exception as e:
@@ -605,3 +586,103 @@ async def get_politician_relationships(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch relationships: {str(e)}"
         )
+
+# --- Unified Politician Details Endpoint ---
+from data_collection.secondary.wikipedia_collector import WikipediaCollector
+from api.routers.news import get_news_by_politician
+import logging
+
+@router.get(
+    "/{politician_id}/details",
+    summary="Get unified details for a politician",
+    description="Aggregates core info, news, Wikipedia, and links for a politician. Always returns as much as possible.",
+)
+async def get_politician_details(
+    politician_id: str = Path(..., description="Politician ID"),
+    session: AsyncSession = Depends(get_db_session),
+):
+    """
+    Unified endpoint for politician details: core info, news, Wikipedia, and links.
+    """
+    result = {}
+    errors = []
+    # 1. Core info from Neo4j
+    try:
+        core_query = "MATCH (p:Politician {id: $id}) RETURN p"
+        core_result = await session.run(core_query, {"id": politician_id})
+        record = await core_result.single()
+        if not record:
+            raise HTTPException(status_code=404, detail=f"Politician with ID {politician_id} not found")
+        p = record["p"]
+        result.update({
+            "id": p.get("id") or p.get("politician_id") or "",
+            "name": p.get("name", ""),
+            "party": p.get("party") or p.get("current_party") or "",
+            "title": p.get("title") or p.get("current_position") or "",
+            "province": p.get("province", ""),
+            "constituency": p.get("constituency", ""),
+            "position": p.get("position") or p.get("current_position") or "",
+            "years_served": p.get("years_served", ""),
+            "image_url": p.get("image_url", ""),
+            "bio": p.get("bio", "")
+        })
+    except Exception as e:
+        logging.error(f"Failed to fetch core info: {str(e)}")
+        errors.append(f"core_info: {str(e)}")
+    # 2. News articles
+    try:
+        from api.routers.news import get_news_by_politician
+        news_response = await get_news_by_politician(politician_id, session, 1, 5)
+        news_data = getattr(news_response, "data", []) if hasattr(news_response, "data") else news_response.get("data", [])
+        # If news is missing, trigger unified enrichment
+        if not news_data:
+            from data_collection.news.unified_news_enricher import UnifiedNewsEnricher
+            from database.neo4j_integration import get_neo4j_writer
+            # Get core info for name
+            politician_name = result.get("name", "")
+            neo4j_writer = await get_neo4j_writer()
+            enricher = UnifiedNewsEnricher(neo4j_writer=neo4j_writer)
+            enriched_news = await enricher.enrich_and_store_politician_news(politician_id, politician_name)
+            result["news"] = enriched_news
+        else:
+            result["news"] = news_data
+    except Exception as e:
+        logging.error(f"Failed to fetch news: {str(e)}")
+        result["news"] = []
+        errors.append(f"news: {str(e)}")
+    # 3. Wikipedia summary
+    try:
+        # Try to get Wikipedia fields from Neo4j first
+        wiki_fields = {k: result.get(k) for k in ["wikipedia_url", "wikipedia_summary", "wikipedia_image_url"]}
+        if not all(wiki_fields.values()):
+            # If any field missing, enrich and persist
+            from data_collection.secondary.wikipedia_enrichment_util import enrich_and_store_wikipedia
+            wiki_info = await enrich_and_store_wikipedia(result.get("id"), result.get("name", ""))
+            if wiki_info:
+                result["wikipedia"] = wiki_info
+                # Also update result for serving links, etc.
+                result["wikipedia_url"] = wiki_info["url"]
+                result["wikipedia_summary"] = wiki_info["summary"]
+                result["wikipedia_image_url"] = wiki_info["image_url"]
+            else:
+                result["wikipedia"] = {}
+        else:
+            result["wikipedia"] = {
+                "url": wiki_fields["wikipedia_url"],
+                "summary": wiki_fields["wikipedia_summary"],
+                "image_url": wiki_fields["wikipedia_image_url"]
+            }
+    except Exception as e:
+        logging.error(f"Failed to fetch Wikipedia: {str(e)}")
+        result["wikipedia"] = {}
+        errors.append(f"wikipedia: {str(e)}")
+    # 4. Related links (optional, can be extended)
+    links = []
+    if result.get("wikipedia", {}).get("url"):
+        links.append({"label": "Wikipedia", "url": result["wikipedia"]["url"]})
+    if result.get("bio"):
+        links.append({"label": "Biography", "url": result.get("bio")})
+    result["links"] = links
+    if errors:
+        result["errors"] = errors
+    return result

@@ -31,7 +31,7 @@ from news.iltalehti_collector import IltalehtCollector
 from news.kauppalehti_collector import KauppalehtiCollector
 from news.mtv_uutiset_collector import MTVUutisetCollector
 
-from secondary.wikipedia_collector import WikipediaCollector
+from secondary.wikipedia_person_collector import WikipediaPersonCollector
 
 class CollectorNeo4jBridge:
     """
@@ -59,7 +59,7 @@ class CollectorNeo4jBridge:
             'mtv_uutiset': MTVUutisetCollector(),
             
             # Secondary (1 collector)
-            'wikipedia': WikipediaCollector()
+            'wikipedia': WikipediaPersonCollector()
         }
         
         self.processing_stats = {
@@ -378,50 +378,44 @@ class CollectorNeo4jBridge:
         return results
     
     async def _collect_wikipedia_enrichment(self) -> Dict[str, Any]:
-        """Collect Wikipedia data for politician enrichment"""
+        """Collect Wikipedia data for politician enrichment (force update all)"""
+        import json
         try:
             wikipedia_collector = self.collectors['wikipedia']
-            
-            # Get existing politicians from Neo4j to enrich
             manager = await get_neo4j_manager()
             existing_politicians = await manager.execute_query(
-                "MATCH (p:Politician) RETURN p.name as name, p.politician_id as id LIMIT 50"
+                "MATCH (p:Politician) RETURN p.name as name, p.politician_id as id"
             )
-            
+            self.logger.info(f"[ENRICHMENT] Found {len(existing_politicians)} politicians to enrich.")
             enriched_count = 0
             for politician in existing_politicians:
+                self.logger.info(f"[ENRICHMENT] Attempting: {politician['name']} ({politician['id']})")
                 try:
-                    # Search for Wikipedia data
-                    if hasattr(wikipedia_collector, 'search_politicians'):
-                        wiki_data = await self._safe_collect(
-                            wikipedia_collector.search_politicians, 
-                            query=politician['name']
-                        )
-                        
-                        if wiki_data:
-                            # Update politician with Wikipedia enrichment
-                            update_query = """
-                            MATCH (p:Politician {politician_id: $politician_id})
-                            SET p.wikipedia_data = $wiki_data,
-                                p.updated_at = datetime()
-                            RETURN p.politician_id
-                            """
-                            
-                            await manager.execute_query(update_query, {
-                                'politician_id': politician['id'],
-                                'wiki_data': json.dumps(wiki_data)
-                            })
-                            
-                            enriched_count += 1
-                
+                    info = wikipedia_collector.get_info(politician['name'])
+                    if info and not info.get('error'):
+                        update_query = """
+                        MATCH (p:Politician {politician_id: $politician_id})
+                        SET p.wikipedia_url = $wikipedia_url,
+                            p.wikipedia_summary = $wikipedia_summary,
+                            p.wikipedia_image_url = $wikipedia_image_url,
+                            p.updated_at = datetime()
+                        RETURN p.politician_id
+                        """
+                        await manager.execute_query(update_query, {
+                            'politician_id': politician['id'],
+                            'wikipedia_url': info.get('wikipedia_url', ''),
+                            'wikipedia_summary': info.get('wikipedia_summary', ''),
+                            'wikipedia_image_url': info.get('wikipedia_image_url', ''),
+                        })
+                        enriched_count += 1
+                    else:
+                        self.logger.warning(f"No Wikipedia data for {politician['name']}")
                 except Exception as e:
                     self.logger.error(f"Error enriching politician {politician['name']}: {str(e)}")
-            
             return {
                 'success': True,
                 'politicians_enriched': enriched_count
             }
-            
         except Exception as e:
             self.logger.error(f"Wikipedia enrichment failed: {str(e)}")
             return {

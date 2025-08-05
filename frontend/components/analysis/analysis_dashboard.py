@@ -1,196 +1,104 @@
 """
-Analysis dashboard component for politician data visualization
+Simple and minimal politician dashboard
+Clean display of politician information from API response
 """
 
 import streamlit as st
-import plotly.graph_objects as go
-import pandas as pd
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict
 import logging
-from datetime import datetime
-
 
 class AnalysisDashboard:
-    """Dashboard for politician analysis and visualization"""
-    
+    """Simple dashboard for politician information display"""
+
     def __init__(self):
-        """Initialize analysis dashboard"""
         self.logger = logging.getLogger(__name__)
-        self.data: Optional[Dict] = None
-        
-    def _create_sector_chart(self, sector_data: Dict[str, float]) -> go.Figure:
-        """
-        Create sector involvement pie chart
-        
-        Args:
-            sector_data: Dictionary of sector percentages
-            
-        Returns:
-            go.Figure: Plotly figure
-        """
-        try:
-            fig = go.Figure(
-                data=[go.Pie(
-                    labels=list(sector_data.keys()),
-                    values=list(sector_data.values()),
-                    hole=.3
-                )]
-            )
-            fig.update_layout(
-                title='Sector Involvement',
-                showlegend=True,
-                legend_title='Sectors',
-                font=dict(
-                    family="Arial",
-                    size=12,
-                    color="#000000"
-                )
-            )
-            return fig
-        except Exception as e:
-            self.logger.error(f"Error creating sector chart: {str(e)}")
-            raise
-    
-    def _create_sentiment_chart(self, sentiment_scores: List[float]) -> go.Figure:
-        """
-        Create sentiment trend line chart
-        
-        Args:
-            sentiment_scores: List of sentiment scores
-            
-        Returns:
-            go.Figure: Plotly figure
-        """
-        try:
-            dates = pd.date_range(
-                end=datetime.now(),
-                periods=len(sentiment_scores),
-                freq='D'
-            )
-            
-            fig = go.Figure(
-                data=[go.Scatter(
-                    x=dates,
-                    y=sentiment_scores,
-                    mode='lines+markers',
-                    name='Sentiment Score'
-                )]
-            )
-            fig.update_layout(
-                title='Sentiment Trend',
-                xaxis_title='Date',
-                yaxis_title='Sentiment Score',
-                yaxis_range=[-1, 1]
-            )
-            return fig
-        except Exception as e:
-            self.logger.error(f"Error creating sentiment chart: {str(e)}")
-            raise
-    
-    def _create_achievement_timeline(self, achievements: List[Dict]) -> go.Figure:
-        """
-        Create achievement timeline
-        
-        Args:
-            achievements: List of achievement dictionaries
-            
-        Returns:
-            go.Figure: Plotly figure
-        """
-        try:
-            df = pd.DataFrame(achievements)
-            
-            fig = go.Figure(
-                data=[go.Scatter(
-                    x=df['date'],
-                    y=df['score'],
-                    mode='markers+text',
-                    text=df['description'],
-                    textposition='top center',
-                    marker=dict(size=10)
-                )]
-            )
-            fig.update_layout(
-                title='Key Achievements',
-                xaxis_title='Date',
-                yaxis_title='Impact Score',
-                showlegend=False
-            )
-            return fig
-        except Exception as e:
-            self.logger.error(f"Error creating achievement timeline: {str(e)}")
-            raise
-    
-    def _create_risk_gauge(self, risk_score: float) -> go.Figure:
-        """
-        Create corruption risk gauge
-        
-        Args:
-            risk_score: Risk score (0-1)
-            
-        Returns:
-            go.Figure: Plotly figure
-        """
-        try:
-            fig = go.Figure(
-                go.Indicator(
-                    mode="gauge+number",
-                    value=risk_score * 100,
-                    domain={'x': [0, 1], 'y': [0, 1]},
-                    title={'text': "Corruption Risk"},
-                    gauge={'axis': {'range': [0, 100]},
-                          'bar': {'color': "#FF4136" if risk_score > 0.5 else "#2ECC40"},
-                          'steps': [
-                              {'range': [0, 33], 'color': "#2ECC40"},
-                              {'range': [33, 66], 'color': "#FFDC00"},
-                              {'range': [66, 100], 'color': "#FF4136"}
-                          ]}
-                )
-            )
-            return fig
-        except Exception as e:
-            self.logger.error(f"Error creating risk gauge: {str(e)}")
-            raise
-    
-    def render(self):
-        """Render the analysis dashboard"""
-        st.title("Analysis Dashboard")
-        
-        # Sector Analysis
-        st.subheader("Sector Involvement")
-        sector_data = {
-            "Healthcare": 0.4,
-            "Education": 0.3,
-            "Economy": 0.2,
-            "Others": 0.1
+
+    def _get_party_name(self, party_code: str) -> str:
+        party_map = {
+            'vas': 'Vasemmistoliitto',
+            'kok': 'Kansallinen Kokoomus',
+            'ps': 'Perussuomalaiset',
+            'kesk': 'Keskusta',
+            'sdp': 'Suomen Sosialidemokraattinen Puolue',
+            'vihr': 'Vihreä liitto',
+            'rkp': 'Svenska folkpartiet',
+            'kd': 'Kristillisdemokraatit',
+            'liik': 'Liike Nyt'
         }
-        st.plotly_chart(self._create_sector_chart(sector_data), use_container_width=True)
+        return party_map.get(str(party_code).lower(), party_code.upper()) if party_code else "Not specified"
+
+    def render(self, politician_details: Optional[Dict] = None, loading: bool = False, error: Optional[str] = None):
+        container = st.empty()
+        with container:
+            st.title("🏛️ Politician Information")
+            # --- DEBUG: Show session state ---
+            
+        # Loading, error, or empty state
+        if loading:
+            st.info("⏳ Loading shaikat politician details...")
+            return
+        if error:
+            st.error(f"❌ Failed to load details: {error}")
+            return
+        if not politician_details:
+            st.info("👈 Select a politician from the sidebar to view their information.")
+            return
+
+        # Errors from API
+        errors = politician_details.get('errors', [])
+        if errors:
+            with st.expander("⚠️ Data Source Issues"):
+                st.warning("Some information may be incomplete due to the following issues:")
+                for err in errors:
+                    st.code(err)
+
+        # --- IMAGE (robust fallback) ---
+        image_url = politician_details.get("image_url")
+        if not image_url:
+            wikipedia = politician_details.get("wikipedia", {})
+            image_url = wikipedia.get("image_url")
+        if image_url:
+            st.image(image_url, width=140)
+        else:
+            st.image("https://via.placeholder.com/140x200?text=No+Image", width=140)
+
+        # --- BASIC INFO ---
+        name = politician_details.get("name", "Unknown")
+        politician_id = politician_details.get("id", "N/A")
+        party_code = politician_details.get("party", "")
+        party_name = self._get_party_name(party_code)
+        position = politician_details.get("position") or politician_details.get("title") or "Member of Parliament"
+        years_served = politician_details.get("years_served") or "Current term"
+        province = politician_details.get("province") or politician_details.get("constituency") or "-"
         
-        # Sentiment Analysis
-        st.subheader("Sentiment Trend")
-        sentiment_scores = [0.75, 0.80, 0.78, 0.82, 0.85, 0.83, 0.87]
-        st.plotly_chart(self._create_sentiment_chart(sentiment_scores), use_container_width=True)
-        
-        # Achievement Timeline
-        st.subheader("Key Achievements")
-        achievements = [
-            {'date': '2023-01-01', 'score': 0.9, 'description': 'Education Reform'},
-            {'date': '2023-03-01', 'score': 0.85, 'description': 'Healthcare Bill'},
-            {'date': '2023-06-01', 'score': 0.88, 'description': 'Economic Policy'}
-        ]
-        st.plotly_chart(self._create_achievement_timeline(achievements), use_container_width=True)
-        
-        # Corruption Risk
-        st.subheader("Corruption Risk Assessment")
-        risk_score = 0.15
-        st.plotly_chart(self._create_risk_gauge(risk_score), use_container_width=True)
-        
-        # Voting Impact Analysis
-        st.subheader("Voting Impact Analysis")
-        st.markdown("""
-        Based on analysis:
-        - Strong impact on healthcare policy
-        - Positive influence on education reform
-        - Consistent economic policy stance
-        - Low corruption risk
-        """)
+        st.header(f"{name}")
+        st.markdown(f"**ID:** {politician_id}")
+        st.markdown(f"**Party:** {party_name}")
+        st.markdown(f"**Province/Constituency:** {province}")
+        st.markdown(f"**Position:** {position}")
+        st.markdown(f"**Service:** {years_served}")
+
+        # --- WIKIPEDIA ---
+        wikipedia = politician_details.get("wikipedia", {})
+        if isinstance(wikipedia, dict):
+            wiki_url = wikipedia.get("url") or politician_details.get("wikipedia_url")
+            wiki_summary = wikipedia.get("summary") or politician_details.get("wikipedia_summary")
+            if wiki_summary or wiki_url:
+                st.subheader("📚 Wikipedia Information")
+                if wiki_summary:
+                    st.write(wiki_summary)
+                if wiki_url:
+                    st.markdown(f"🔗 [View Wikipedia Page]({wiki_url})")
+
+        # --- LINKS ---
+        links = politician_details.get("links", [])
+        if links:
+            st.subheader("🔗 Additional Links")
+            for link_item in links:
+                if isinstance(link_item, dict):
+                    label = link_item.get("label", "Link")
+                    url = link_item.get("url", "")
+                    if url:
+                        st.markdown(f"• [{label}]({url})")
+
+        st.caption("ℹ️ Information sourced from Finnish Parliament Open Data and Wikipedia")

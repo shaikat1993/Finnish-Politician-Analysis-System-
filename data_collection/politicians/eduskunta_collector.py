@@ -54,32 +54,24 @@ class EduskuntaCollector(PoliticianCollector):
 
     def get_politicians(self, term: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        Get politicians by scraping official Eduskunta website
-        
-        Args:
-            term: Electoral term (vaalikausi) - not used in scraping
-        
+        Get politicians from canonical eduskunta_politicians.json file (source of truth).
         Returns:
-            List of politician dictionaries
+            List of politician dictionaries with numeric id and politician_id fields.
         """
+        import os, json
         try:
-            self.logger.info("Scraping politicians from official Eduskunta website")
-            
-            # Scrape current MPs from official website
-            politicians = self._scrape_current_mps()
-            
-            if not politicians:
-                self.logger.warning("No politicians found via scraping, trying alternative sources")
-                politicians = self._scrape_alternative_sources()
-            
-            self.logger.info(f"Successfully scraped {len(politicians)} politicians")
-            print(f"Collected {len(politicians)} politicians from Eduskunta")
-            for p in politicians[:10]:
-                print(p)
+            json_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'eduskunta_politicians.json')
+            with open(json_path, 'r', encoding='utf-8') as f:
+                politicians = json.load(f)
+            # Ensure every dict has 'id' and 'politician_id' as string
+            for p in politicians:
+                pid = str(p.get('politician_id', ''))
+                p['id'] = pid
+                p['politician_id'] = pid
+            self.logger.info(f"Loaded {len(politicians)} politicians from eduskunta_politicians.json")
             return politicians
-            
         except Exception as e:
-            self.logger.error(f"Error scraping politicians: {str(e)}")
+            self.logger.error(f"Error loading politicians from eduskunta_politicians.json: {str(e)}")
             return []
 
     def get_voting_records(
@@ -368,7 +360,8 @@ class EduskuntaCollector(PoliticianCollector):
                     skipped += 1
                     continue
                 politician = {
-                    "politician_id": heteka_id,
+                    "id": str(heteka_id),
+                    "politician_id": str(heteka_id),
                     "name": name,
                     "party": mp.get("party", "Unknown"),
                     "constituency": constituency,
@@ -386,7 +379,12 @@ class EduskuntaCollector(PoliticianCollector):
             self.logger.info("Using fallback politician data from known current MPs")
             return self._get_current_finnish_politicians()
     
-    def _get_current_finnish_politicians(self) -> List[Dict[str, Any]]:
+    # DISABLED: Fallback data should not be used for canonical import. Only get_politicians() with eduskunta_politicians.json is allowed.
+    # def _get_current_finnish_politicians(self) -> List[Dict[str, Any]]:
+    #     """Get current Finnish politicians from reliable sources (2023-2027 term)"""
+    #     ...
+    #     return politicians
+
         """Get current Finnish politicians from reliable sources (2023-2027 term)"""
         try:
             # Current Finnish politicians from 2023 election results
@@ -515,7 +513,11 @@ class EduskuntaCollector(PoliticianCollector):
             self.logger.error(f"Error generating fallback politician data: {str(e)}")
             return []
     
-    def _scrape_alternative_sources(self) -> List[Dict[str, Any]]:
+    # DISABLED: Scraping alternative sources is not allowed for canonical import. Only get_politicians() with eduskunta_politicians.json is allowed.
+    # def _scrape_alternative_sources(self) -> List[Dict[str, Any]]:
+    #     ...
+    #     return []
+
         """Scrape from alternative official sources"""
         try:
             politicians = []
@@ -547,7 +549,11 @@ class EduskuntaCollector(PoliticianCollector):
             self.logger.error(f"Error scraping alternative sources: {str(e)}")
             return []
     
-    def _scrape_party_page(self, url: str) -> List[Dict[str, Any]]:
+    # DISABLED: Scraping party pages is not allowed for canonical import. Only get_politicians() with eduskunta_politicians.json is allowed.
+    # def _scrape_party_page(self, url: str) -> List[Dict[str, Any]]:
+    #     ...
+    #     return []
+
         """Scrape politicians from a party-specific page"""
         try:
             response = self.session.get(url, timeout=10)
@@ -573,7 +579,11 @@ class EduskuntaCollector(PoliticianCollector):
             self.logger.error(f"Error scraping party page {url}: {str(e)}")
             return []
     
-    def _extract_politician_from_element(self, element) -> Optional[Dict[str, Any]]:
+    # DISABLED: Extraction from HTML elements is not allowed for canonical import. Only get_politicians() with eduskunta_politicians.json is allowed.
+    # def _extract_politician_from_element(self, element) -> Optional[Dict[str, Any]]:
+    #     ...
+    #     return None
+
         """Extract politician data from HTML element"""
         try:
             # Try to find name
@@ -622,7 +632,11 @@ class EduskuntaCollector(PoliticianCollector):
             self.logger.error(f"Error extracting politician from element: {str(e)}")
             return None
     
-    def _extract_politician_from_link(self, link_element, party_name: str) -> Optional[Dict[str, Any]]:
+    # DISABLED: Extraction from HTML links is not allowed for canonical import. Only get_politicians() with eduskunta_politicians.json is allowed.
+    # def _extract_politician_from_link(self, link_element, party_name: str) -> Optional[Dict[str, Any]]:
+    #     ...
+    #     return None
+
         """Extract politician data from link element"""
         try:
             name = link_element.get_text().strip()
@@ -655,7 +669,11 @@ class EduskuntaCollector(PoliticianCollector):
             self.logger.error(f"Error extracting politician from link: {str(e)}")
             return None
     
-    def _generate_politician_id(self, name: str) -> str:
+    # DISABLED: ID generation from name is not allowed for canonical import. Only get_politicians() with eduskunta_politicians.json is allowed.
+    # def _generate_politician_id(self, name: str) -> str:
+    #     ...
+    #     return ""
+
         """Generate consistent politician ID from name"""
         try:
             # Convert to lowercase, replace spaces with hyphens, remove special chars

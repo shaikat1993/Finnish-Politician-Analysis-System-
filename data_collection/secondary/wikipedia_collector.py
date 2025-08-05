@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime
 from dataclasses import dataclass
 import wikipediaapi
+import unicodedata
 
 import sys
 import os
@@ -36,6 +37,8 @@ class WikipediaCollector(BaseCollector):
     
     def __init__(self):
         super().__init__('wikipedia')
+        import wikipediaapi
+        self.wiki = wikipediaapi.Wikipedia(language='en', user_agent='FinnishPoliticianAnalysisBot/1.0 (shaikat1993@gmail.com)')  # English Wikipedia with user agent
     
     def collect_data(self, **kwargs) -> List[Dict[str, Any]]:
         """Implement abstract method from base class"""
@@ -71,18 +74,121 @@ class WikipediaCollector(BaseCollector):
         return categories
 
     def get_politician_info(self, politician_name: str) -> Optional[WikipediaPolitician]:
-        """Get detailed information about a specific politician"""
-        page = self.wiki.page(politician_name)
-        
-        if not page.exists():
+        """
+        Get detailed information about a specific politician, with robust fallback logic and fuzzy matching.
+        Logs every step for bulletproof debugging and root-cause analysis.
+        """
+        print(f"[DEBUG] get_politician_info CALLED for: {politician_name}")
+        import mwparserfromhell
+        from difflib import get_close_matches
+        import logging
+        logger = logging.getLogger("wikipedia_collector")
+        if not logger.hasHandlers():
+            handler = logging.StreamHandler()
+            handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            logger.addHandler(handler)
+            logger.setLevel(logging.INFO)
+
+        logger.info(f"[ENRICH] Start enrichment for: '{politician_name}'")
+        print(f"[DEBUG] Logging active for: {politician_name}")
+
+        def try_page(wiki, name, lang_label):
+            logger.info(f"[ENRICH] Trying exact page: '{name}' (lang={lang_label})")
+            page = wiki.page(name)
+            if page.exists():
+                logger.info(f"[ENRICH] Found exact page: '{name}' (lang={lang_label})")
+                return page
+            # Try normalized
+            norm_name = self._normalize_name(name)
+            if norm_name != name:
+                logger.info(f"[ENRICH] Trying normalized: '{norm_name}' (lang={lang_label})")
+                page = wiki.page(norm_name)
+                if page.exists():
+                    logger.info(f"[ENRICH] Found normalized page: '{norm_name}' (lang={lang_label})")
+                    return page
             return None
-            
-        # Parse infobox data
-        infobox = self._parse_infobox(page.text)
-        
+
+        # Try Finnish Wikipedia first (most likely for Finnish MPs)
+        import wikipediaapi
+        wiki_fi = wikipediaapi.Wikipedia(language='fi', user_agent='FinnishPoliticianAnalysisBot/1.0 (shaikat1993@gmail.com)')
+        page = try_page(wiki_fi, politician_name, 'fi')
+
+        tokens = politician_name.split()
+        # Fuzzy fallback: try removing middle names, try last name only
+        if not page:
+            if len(tokens) > 2:
+                simple_name = f"{tokens[0]} {tokens[-1]}"
+                page = try_page(wiki_fi, simple_name, 'fi')
+            if not page and len(tokens) > 1:
+                page = try_page(wiki_fi, tokens[-1], 'fi')
+
+        # Try English Wikipedia if still not found
+        if not page:
+            wiki_en = self.wiki
+            page = try_page(wiki_en, politician_name, 'en')
+            if not page and len(tokens) > 2:
+                simple_name = f"{tokens[0]} {tokens[-1]}"
+                page = try_page(wiki_en, simple_name, 'en')
+            if not page and len(tokens) > 1:
+                page = try_page(wiki_en, tokens[-1], 'en')
+
+        # Fuzzy search in both languages if still not found
+        if not page:
+            try:
+                logger.info("[ENRICH] Fuzzy search in Finnish category")
+                category = wiki_fi.page("Luokka:Suomen kansanedustajat")
+                if category.exists():
+                    candidates = [m.title for m in category.categorymembers.values() if m.ns == 0]
+                    match = get_close_matches(politician_name, candidates, n=1, cutoff=0.75)
+                    if match:
+                        logger.info(f"[ENRICH] Fuzzy match in fi: '{match[0]}'")
+                        page = wiki_fi.page(match[0])
+            except Exception as e:
+                logger.warning(f"[ENRICH] Fuzzy category search failed (fi): {e}")
+        if not page:
+            try:
+                logger.info("[ENRICH] Fuzzy search in English category")
+                category = self.wiki.page("Category:Members of the Parliament of Finland")
+                if category.exists():
+                    candidates = [m.title for m in category.categorymembers.values() if m.ns == 0]
+                    match = get_close_matches(politician_name, candidates, n=1, cutoff=0.75)
+                    if match:
+                        logger.info(f"[ENRICH] Fuzzy match in en: '{match[0]}'")
+                        page = self.wiki.page(match[0])
+            except Exception as e:
+                logger.warning(f"[ENRICH] Fuzzy category search failed (en): {e}")
+
+        if not page or not page.exists():
+            logger.warning(f"[ENRICH] No Wikipedia page found for: '{politician_name}'")
+            return None
+
+        # Use mwparserfromhell for robust infobox parsing
+        try:
+            wikicode = mwparserfromhell.parse(page.text)
+            templates = [t for t in wikicode.filter_templates() if "Infobox" in t.name.lower()]
+            infobox = {}
+            if templates:
+                t = templates[0]
+                for param in t.params:
+                    pname = str(param.name).strip().lower()
+                    pval = str(param.value).strip()
+                    if pname in ("syntynyt", "born"):
+                        infobox["birth_date"] = pval
+                    elif pname in ("kuollut", "died"):
+                        infobox["death_date"] = pval
+                    elif pname in ("puolue", "party"):
+                        infobox["parties"] = [pval]
+                    elif pname in ("virka", "position", "positions"):
+                        infobox["positions"] = [pval]
+            else:
+                infobox = self._parse_infobox(page.text)
+        except Exception as e:
+            logger.error(f"[ENRICH] Infobox parsing failed for '{politician_name}': {e}")
+            infobox = {}
+
         politician = WikipediaPolitician(
             name=politician_name,
-            wiki_id=page.pageid,
+            wiki_id=getattr(page, 'pageid', ''),
             url=page.fullurl,
             summary=page.summary,
             birth_date=infobox.get("birth_date"),
@@ -91,7 +197,7 @@ class WikipediaCollector(BaseCollector):
             positions=infobox.get("positions", []),
             image_url=self._get_image_url(page)
         )
-        
+        logger.info(f"[ENRICH] SUCCESS: Enriched '{politician_name}' with Wikipedia URL: {politician.url}")
         return politician
 
     def _parse_infobox(self, text: str) -> Dict[str, Any]:
@@ -114,12 +220,52 @@ class WikipediaCollector(BaseCollector):
         return infobox
 
     def _get_image_url(self, page) -> Optional[str]:
-        """Get the main image URL from the page"""
+        """
+        Get the main image URL for a Wikipedia page.
+        1. Try Wikidata (P18 property)
+        2. Fallback: Try Wikipedia 'pageimages' API
+        Returns None if no image found.
+        """
+        # 1. Try Wikidata (P18)
+        if hasattr(page, 'wikibase') and page.wikibase:
+            wikidata_url = f'https://www.wikidata.org/wiki/Special:EntityData/{page.wikibase}.json'
+            try:
+                r = requests.get(wikidata_url, timeout=5)
+                if r.status_code == 200:
+                    data = r.json()
+                    entity = data['entities'][page.wikibase]
+                    claims = entity.get('claims', {})
+                    if 'P18' in claims:
+                        image_name = claims['P18'][0]['mainsnak']['datavalue']['value']
+                        from urllib.parse import quote
+                        # Direct image URL from Wikimedia Commons
+                        image_url = f'https://commons.wikimedia.org/wiki/Special:FilePath/{quote(image_name)}'
+                        return image_url
+            except Exception as e:
+                # Log error (optional)
+                pass
+        # 2. Fallback: Try Wikipedia API 'pageimages'
         try:
-            image = page.images[0]
-            return image.fullurl
-        except (IndexError, KeyError):
-            return None
+            # Use Wikipedia API to get thumbnail
+            api_url = (
+                f"https://{page.language}.wikipedia.org/w/api.php?action=query&titles="
+                f"{requests.utils.quote(page.title)}&prop=pageimages&format=json&pithumbsize=500"
+            )
+            resp = requests.get(api_url, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                pages = data.get('query', {}).get('pages', {})
+                for p in pages.values():
+                    if 'thumbnail' in p and 'source' in p['thumbnail']:
+                        return p['thumbnail']['source']
+        except Exception as e:
+            # Log error (optional)
+            pass
+        # No image found
+        return None
+
+    def _normalize_name(self, name):
+        return unicodedata.normalize('NFKD', name).encode('ascii', 'ignore').decode('ascii')
 
     def save_to_json(self, data: List[Dict], filename: str):
         """Save collected Wikipedia data to JSON file"""

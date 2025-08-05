@@ -194,6 +194,12 @@ class Neo4jConnectionManager:
         start_time = time.time()
         parameters = parameters or {}
         
+        # Assert all parameter keys are strings for Neo4j compatibility
+        if parameters is not None:
+            for k in parameters.keys():
+                if not isinstance(k, str):
+                    self.logger.error(f"Neo4j query parameters contain non-string key: {k} (type: {type(k)}), parameters: {parameters}")
+                    raise TypeError(f"Neo4j query parameters must have string keys, got key: {k} (type: {type(k)})")
         try:
             async with self.session() as session:
                 result = await session.run(query, parameters)
@@ -249,20 +255,11 @@ class DataTransformer:
     
     @staticmethod
     def transform_politician_data(politician_data: Dict[str, Any], source: str) -> Dict[str, Any]:
-        """Transform politician data for Neo4j storage"""
-        # Generate robust politician_id that's never empty - always use our generation logic
-        name = politician_data.get('name', '').strip()
-        
-        # Always generate from name to ensure consistency and avoid parameter issues
-        if name:
-            # Clean name for ID generation
-            clean_name = name.replace(' ', '_').replace('-', '_').replace('.', '').replace(',', '').replace('ä', 'a').replace('ö', 'o').replace('å', 'a')
-            final_id = f"{source}_{clean_name}"
-        else:
-            # Fallback with timestamp to ensure uniqueness
-            import time
-            final_id = f"{source}_politician_{int(time.time())}"
-        
+        """Transform politician data for Neo4j storage (canonical numeric ID only)"""
+        # Always use the official numeric ID from Eduskunta or raise an error
+        final_id = str(politician_data.get('id', '')).strip()
+        if not final_id.isdigit():
+            raise ValueError(f"Invalid or missing numeric ID for politician: {politician_data}")
         return {
             'politician_id': final_id,
             'name': politician_data.get('name', ''),
@@ -271,10 +268,13 @@ class DataTransformer:
             'current_party': politician_data.get('party', ''),
             'current_position': politician_data.get('position', ''),
             'constituency': politician_data.get('constituency', ''),
-            'image_url': politician_data.get('image_url', ''),
+            'image_url': str(politician_data.get('image_url', '') or '').strip(),
             'is_active': politician_data.get('active', True),
             'contact_info': json.dumps(politician_data.get('contact', {})),
             'biography': politician_data.get('bio', ''),
+            'wikipedia_url': politician_data.get('wikipedia_url', ''),
+            'wikipedia_summary': politician_data.get('wikipedia_summary', ''),
+            'wikipedia_image_url': politician_data.get('wikipedia_image_url', ''),
             'data_sources': [source],
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
@@ -460,7 +460,11 @@ class Neo4jWriter:
                 p.current_party = politician.current_party,
                 p.constituency = politician.constituency,
                 p.current_position = politician.current_position,
-                p.image_url = politician.image_url,
+                p.image_url = CASE 
+                    WHEN politician.image_url IS NOT NULL AND politician.image_url <> '' 
+                    THEN politician.image_url 
+                    ELSE p.image_url 
+                END,
                 p.is_active = politician.is_active,
                 p.first_name = politician.first_name,
                 p.last_name = politician.last_name,
