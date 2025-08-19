@@ -139,7 +139,7 @@ class ProvinceDetails:
                                 
                             # Extract and validate image URL
                             image_url = politician_data.get('image_url', '')
-                            if not image_url or not isinstance(image_url, str) or not image_url.startswith(('http://', 'https://')):
+                            if not image_url or not image_url.startswith(('http://', 'https://')):
                                 # Generate initials for placeholder
                                 name_parts = [p for p in name.split() if p[0].isupper()]
                                 initials = ''.join([p[0] for p in name_parts[:2]]) if len(name_parts) > 1 else name[:2].upper()
@@ -398,17 +398,26 @@ class ProvinceDetails:
                 """, unsafe_allow_html=True)
                 
                 # Try to display the image with error handling
-                if politician.image_url and politician.image_url.startswith(('http://', 'https://')):
+                image_url = politician.image_url
+                
+                # Try to get image from session state if this is the selected politician
+                if (not image_url or not image_url.startswith(('http://', 'https://'))) and \
+                   'selected_politician_id' in st.session_state and \
+                   politician.id == st.session_state.get('selected_politician_id') and \
+                   'selected_politician_image' in st.session_state:
+                    image_url = st.session_state['selected_politician_image']
+                
+                if image_url and image_url.startswith(('http://', 'https://')):
                     try:
                         # Use st.image with error handling
                         st.image(
-                            politician.image_url,
+                            image_url,
                             width=150,
                             use_container_width=False,
                             caption=politician.name
                         )
                     except Exception as e:
-                        self.logger.warning(f"Failed to load image for {politician.name} from {politician.image_url}: {str(e)}")
+                        self.logger.warning(f"Failed to load image for {politician.name} from {image_url}: {str(e)}")
                         self._render_politician_initials(politician.name)
                 else:
                     self.logger.debug(f"No valid image URL for {politician.name}, using initials")

@@ -57,6 +57,11 @@ class AnalysisDashboard:
         if not image_url:
             wikipedia = politician_details.get("wikipedia", {})
             image_url = wikipedia.get("image_url")
+        
+        # Try to get image from session state if not found in current details
+        if not image_url and 'selected_politician_image' in st.session_state:
+            image_url = st.session_state['selected_politician_image']
+            
         if image_url:
             st.image(image_url, width=140)
         else:
@@ -94,16 +99,57 @@ class AnalysisDashboard:
         news = politician_details.get("news", [])
         if news:
             st.subheader("📰 Latest News")
-            for article in news:
+            
+            # Create columns for better layout
+            for i, article in enumerate(news):
                 title = article.get("title", "Untitled")
                 url = article.get("url", "")
                 source = article.get("source", "")
-                date = article.get("published_at", "")
-                if url:
-                    st.markdown(f"• [{title}]({url})  <sub>{source} | {date}</sub>", unsafe_allow_html=True)
-                else:
-                    st.markdown(f"• {title}  <sub>{source} | {date}</sub>", unsafe_allow_html=True)
-
+                
+                # Format the date properly
+                date_str = "Unknown date"
+                published_date = article.get("published_date") or article.get("published_at")
+                if published_date:
+                    try:
+                        # If it's a datetime object
+                        if hasattr(published_date, 'strftime'):
+                            date_str = published_date.strftime("%d.%m.%Y")
+                        # If it's a string, try to parse it
+                        elif isinstance(published_date, str):
+                            from datetime import datetime
+                            date_obj = datetime.fromisoformat(published_date.replace('Z', '+00:00'))
+                            date_str = date_obj.strftime("%d.%m.%Y")
+                    except Exception:
+                        date_str = str(published_date)
+                
+                # Add source icon based on the news source
+                source_icon = "📄"
+                if "yle" in str(source).lower():
+                    source_icon = "🔷"
+                elif "helsingin" in str(source).lower() or "hs.fi" in str(source).lower():
+                    source_icon = "🔶"
+                elif "iltalehti" in str(source).lower():
+                    source_icon = "🔴"
+                elif "mtv" in str(source).lower():
+                    source_icon = "🔵"
+                elif "ilta-sanomat" in str(source).lower() or "is.fi" in str(source).lower():
+                    source_icon = "🟠"
+                
+                # Create a card-like effect with expander
+                with st.container():
+                    col1, col2 = st.columns([4, 1])
+                    with col1:
+                        if url:
+                            st.markdown(f"### [{title}]({url})")
+                        else:
+                            st.markdown(f"### {title}")
+                    with col2:
+                        st.markdown(f"<div style='text-align: right'>{source_icon} {source}<br>{date_str}</div>", unsafe_allow_html=True)
+                    
+                    # Add a divider between articles
+                    if i < len(news) - 1:
+                        st.markdown("---")
+        
         # --- LINKS ---
         links = politician_details.get("links", [])
         if links:

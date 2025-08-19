@@ -29,10 +29,37 @@ def render_politician_details(details, loading=False, error=None):
         if not image_url:
             wikipedia = details.get("wikipedia", {})
             image_url = wikipedia.get("image_url")
-        if image_url:
-            st.image(image_url, width=140)
+        
+        # Try to get image from session state if not found in current details
+        if not image_url and 'selected_politician_image' in st.session_state:
+            image_url = st.session_state['selected_politician_image']
+            
+        # Use MainDashboard's validation method
+        # Since this is a standalone function, we can't use self._is_valid_image_url
+        # So we'll implement the validation inline
+        is_valid_url = False
+        if image_url and isinstance(image_url, str):
+            if image_url.startswith(('http://', 'https://')):
+                # Reject placeholder URLs
+                if 'placeholder.com' not in image_url.lower():
+                    # Reject common invalid values
+                    invalid_values = ['0', 'none', 'null', 'undefined', 'n/a']
+                    if image_url.lower() not in invalid_values:
+                        is_valid_url = True
+        
+        if is_valid_url:
+            # Use HTML to control both width and height with proper aspect ratio
+            st.markdown(f"""
+            <div style="width:140px; height:180px; overflow:hidden; border-radius:5px;">
+                <img src="{image_url}" style="width:100%; height:100%; object-fit:cover; object-position:top;">
+            </div>
+            """, unsafe_allow_html=True)
         else:
-            st.image("https://via.placeholder.com/140x200?text=No+Image", width=140)
+            st.markdown("""
+            <div style="width:140px; height:180px; overflow:hidden; border-radius:5px;">
+                <img src="https://via.placeholder.com/140x180?text=No+Image" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+            """, unsafe_allow_html=True)
         # Basic Info
         name = details.get("name", "Unknown")
         politician_id = details.get("id", "N/A")
@@ -104,6 +131,16 @@ class MainDashboard:
         else:
             st.session_state['selected_politician'] = str(details)
         
+        # Save image URL in session state to persist across reloads
+        image_url = details.get("image_url")
+        if not image_url:
+            wikipedia = details.get("wikipedia", {})
+            if isinstance(wikipedia, dict):
+                image_url = wikipedia.get("image_url")
+        
+        # Only save valid image URLs to session state
+        if image_url and isinstance(image_url, str) and image_url.startswith(('http://', 'https://')):
+            st.session_state['selected_politician_image'] = image_url
 
     def __init__(self, api_base_url: str):
         self.api_base_url = api_base_url
@@ -190,15 +227,56 @@ class MainDashboard:
                         if idx < len(row):
                             pol = row[idx]
                             with st.container():
-                                if pol.get("image_url"):
-                                    st.image(pol["image_url"], width=100)
+                                # Get image URL with fallback to session state
+                                image_url = pol.get("image_url")
+                                pol_id = pol.get('id', pol.get('politician_id', None))
+                                
+                                # If this is the selected politician and we have a saved image, use it
+                                if not image_url and pol_id and pol_id == st.session_state.get('selected_politician_id') and 'selected_politician_image' in st.session_state:
+                                    image_url = st.session_state['selected_politician_image']
+                                
+                                # Validate image URL to prevent broken images
+                                is_valid_url = False
+                                if image_url and isinstance(image_url, str):
+                                    if image_url.startswith(('http://', 'https://')):
+                                        # Reject placeholder URLs
+                                        if 'placeholder.com' not in image_url.lower():
+                                            # Reject common invalid values
+                                            invalid_values = ['0', 'none', 'null', 'undefined', 'n/a']
+                                            if image_url.lower() not in invalid_values:
+                                                is_valid_url = True
+                                
+                                if is_valid_url:
+                                    # Use HTML to control both width and height with proper aspect ratio
+                                    st.markdown(f"""
+                                    <div style="width:100px; height:130px; overflow:hidden; border-radius:5px;">
+                                        <img src="{image_url}" style="width:100%; height:100%; object-fit:cover; object-position:top;">
+                                    </div>
+                                    """, unsafe_allow_html=True)
                                 else:
-                                    st.image("https://via.placeholder.com/100x140?text=No+Image", width=100)
-                                st.markdown(f"**{pol.get('name','')}**")
+                                    st.markdown("""
+                                    <div style="width:100px; height:130px; overflow:hidden; border-radius:5px;">
+                                        <img src="https://via.placeholder.com/100x130?text=No+Image" style="width:100%; height:100%; object-fit:cover;">
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                                # Use a fixed-height div for the name to ensure consistent alignment
+                                st.markdown(f"""
+                                <div style="height:40px; overflow:hidden; display:flex; flex-direction:column; justify-content:center;">
+                                    <div style="line-height:1.2; font-weight:bold; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+                                        {pol.get('name','')}
+                                    </div>
+                                </div>
+                                """, unsafe_allow_html=True)
                                 st.caption(f"{pol.get('party','')}")
                                 if st.button("View Details", key=f"view_details_{pol.get('id', pol.get('politician_id', pol.get('name','')))}"):
                                     st.session_state.selected_politician_id = pol.get('id', pol.get('politician_id', None))
                                     st.session_state.selected_politician_details = None
+                                    
+                                    # Save image URL to session state immediately when selecting from grid
+                                    image_url = pol.get("image_url")
+                                    if image_url:
+                                        st.session_state['selected_politician_image'] = image_url
+                                    
                                     st.session_state.analysis_loading = True
                                     st.session_state.details_error = None
                                     st.rerun()

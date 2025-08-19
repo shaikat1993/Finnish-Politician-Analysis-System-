@@ -68,7 +68,11 @@ async def analyze_relationship_network(
     try:
         # Verify all politician IDs exist
         for politician_id in request.politician_ids:
-            check_query = "MATCH (p:Politician {id: $id}) RETURN p"
+            check_query = """
+            MATCH (p:Politician)
+            WHERE p.politician_id = $id OR p.id = $id
+            RETURN p
+            """
             check_result = await session.run(check_query, {"id": politician_id})
             check_record = await check_result.single()
             

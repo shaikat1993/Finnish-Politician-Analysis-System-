@@ -201,12 +201,12 @@ class AnalyticsService:
             Dict containing sentiment analysis
         """
         query = """
-        MATCH (p:Politician)-[r:MENTIONED_IN]->(n:News)
+        MATCH (p:Politician)-[r:MENTIONS]->(n:Article)
         WITH p, avg(n.sentiment_score) as avg_sentiment, count(n) as mention_count
         ORDER BY mention_count DESC, avg_sentiment DESC
         LIMIT $limit
         RETURN 
-            p.id as politician_id,
+            coalesce(p.politician_id, p.id) as politician_id,
             p.name as politician_name,
             p.party as party,
             avg_sentiment,
@@ -240,7 +240,7 @@ class AnalyticsService:
             Dict containing trending topics
         """
         query = """
-        MATCH (t:Topic)<-[r:HAS_TOPIC]-(n:News)
+        MATCH (t:Topic)<-[r:HAS_TOPIC]-(n:Article)
         WHERE datetime(n.published_date) > datetime() - duration({days: $days})
         WITH t, count(n) as article_count
         ORDER BY article_count DESC

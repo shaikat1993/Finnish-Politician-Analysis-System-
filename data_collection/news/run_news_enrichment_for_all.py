@@ -10,9 +10,15 @@ if PROJECT_ROOT not in sys.path:
 from data_collection.news.unified_news_enricher import UnifiedNewsEnricher
 from database.neo4j_integration import Neo4jConnectionManager, Neo4jWriter
 
-async def get_all_politicians(session):
-    query = "MATCH (p:Politician) RETURN p.id AS id, p.name AS name"
-    result = await session.run(query)
+async def get_all_politicians(session, limit: int | None = None):
+    query = (
+        "MATCH (p:Politician) "
+        "RETURN coalesce(p.politician_id, p.id) AS id, coalesce(p.name, p.full_name) AS name "
+        "ORDER BY name "
+        + ("LIMIT $limit" if limit else "")
+    )
+    params = {"limit": limit} if limit else {}
+    result = await session.run(query, **params)
     return [record for record in [record async for record in result]]
 
 async def main():
@@ -22,7 +28,14 @@ async def main():
     neo4j_writer = Neo4jWriter(manager)
     await neo4j_writer.initialize()
     async with manager.session() as session:
-        politicians = await get_all_politicians(session)
+        # Optional cap for smoke tests
+        enrich_limit_env = os.getenv("ENRICH_LIMIT", "").strip()
+        try:
+            enrich_limit = int(enrich_limit_env) if enrich_limit_env else None
+        except ValueError:
+            enrich_limit = None
+
+        politicians = await get_all_politicians(session, enrich_limit)
         print(f"Found {len(politicians)} politicians.")
         print("Sample politician dicts:", politicians[:3])
         enricher = UnifiedNewsEnricher(neo4j_writer=neo4j_writer)

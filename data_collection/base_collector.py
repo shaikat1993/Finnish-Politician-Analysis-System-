@@ -27,6 +27,8 @@ class BaseCollector(ABC):
         self.setup_logging()
         self.setup_session()
         self._last_request_time = 0
+        self.timeout = 10  # Default timeout in seconds
+        self.max_retries = 3  # Default number of retries
         
         # Validate service exists in configuration
         if self.service_name not in APIConfig.list_available_services():
@@ -68,17 +70,34 @@ class BaseCollector(ABC):
         # Get URL
         url = self.get_endpoint_url(endpoint, **url_kwargs)
         
-        try:
-            self.logger.debug(f"Making request to: {url}")
-            response = self.session.get(url, params=params or {})
-            response.raise_for_status()
-            
-            self._last_request_time = time.time()
-            return response
-            
-        except requests.RequestException as e:
-            self.logger.error(f"Request failed for {url}: {str(e)}")
-            raise
+        # Implement retry logic
+        retries = 0
+        last_exception = None
+        
+        while retries <= self.max_retries:
+            try:
+                self.logger.debug(f"Making request to: {url} (attempt {retries+1}/{self.max_retries+1})")
+                response = self.session.get(url, params=params or {}, timeout=self.timeout)
+                response.raise_for_status()
+                
+                self._last_request_time = time.time()
+                return response
+                
+            except requests.RequestException as e:
+                last_exception = e
+                retries += 1
+                
+                if retries > self.max_retries:
+                    self.logger.error(f"Request failed after {self.max_retries} retries for {url}: {str(e)}")
+                    break
+                
+                # Exponential backoff with jitter
+                wait_time = (2 ** retries) + (time.time() % 1)
+                self.logger.warning(f"Request failed: {str(e)}. Retrying in {wait_time:.2f}s...")
+                time.sleep(wait_time)
+        
+        # If we get here, all retries failed
+        raise last_exception or requests.RequestException(f"Request to {url} failed after {self.max_retries} retries")
     
     def _apply_rate_limit(self):
         """Apply rate limiting based on service configuration"""
@@ -140,7 +159,7 @@ class BaseCollector(ABC):
         try:
             # Try to make a simple request to test connectivity
             # This should be overridden by subclasses for service-specific testing
-            response = self.session.get(APIConfig.get_endpoint_url(self.service_name, list(APIConfig.get_headers(self.service_name).keys())[0]))
+            response = self.session.get(APIConfig.get_endpoint_url(self.service_name, list(APIConfig.get_headers(self.service_name).keys())[0]), timeout=self.timeout)
             return response.status_code < 400
         except Exception as e:
             self.logger.error(f"Connection test failed: {str(e)}")
@@ -167,12 +186,15 @@ class NewsCollector(BaseCollector):
             for feed in feeds:
                 try:
                     self.logger.info(f"Fetching RSS feed: {feed.name}")
-                    parsed_feed = feedparser.parse(feed.url)
+                    start_time = time.time()
+                    parsed_feed = feedparser.parse(feed.url, timeout=self.timeout)
                     
                     for entry in parsed_feed.entries[:limit]:
                         article = self._parse_rss_entry(entry, category)
                         if article:
                             all_articles.append(article)
+                    
+                    self.logger.info(f"Processed RSS feed {feed.name} in {time.time() - start_time:.2f}s")
                             
                 except Exception as e:
                     self.logger.error(f"Error processing RSS feed {feed.name}: {str(e)}")

@@ -13,6 +13,7 @@ import json
 import time
 from enum import Enum
 import hashlib
+import uuid
 
 from neo4j import AsyncGraphDatabase, AsyncSession, AsyncTransaction
 from neo4j.exceptions import ServiceUnavailable, TransientError, ClientError
@@ -300,6 +301,15 @@ class DataTransformer:
             'mentioned_politicians': json.dumps(article_data.get('mentioned_politicians', [])),
             'mentioned_parties': json.dumps(article_data.get('mentioned_parties', [])),
             'tags': json.dumps(article_data.get('tags', [])),
+            # Verification annotations (optional)
+            'is_fake_news': article_data.get('is_fake_news'),
+            'is_malicious_content': article_data.get('is_malicious_content'),
+            'contains_hate_speech': article_data.get('contains_hate_speech'),
+            'is_ai_generated': article_data.get('is_ai_generated'),
+            'verification_confidence': article_data.get('verification_confidence'),
+            'verification_notes': article_data.get('verification_notes', ''),
+            'verified_at': article_data.get('verified_at') or datetime.now().isoformat(),
+            'verification_source': article_data.get('verification_source', ''),
             'created_at': datetime.now().isoformat(),
             'updated_at': datetime.now().isoformat()
         }
@@ -400,12 +410,21 @@ class Neo4jWriter:
         properties = properties or {}
         properties['created_at'] = datetime.now().isoformat()
 
+        # Validate inputs to avoid noisy errors
+        pid = str(politician_id or '').strip()
+        aurl = str(article_url or '').strip()
+        if not pid or not aurl:
+            self.logger.warning(
+                f"[SKIP] Invalid relationship inputs: politician_id='{politician_id}', article_url='{article_url}'"
+            )
+            return False
+
         self.logger.info(
             f"Creating relationship {relationship_type.value} between Politician(id={politician_id}) and Article(url={article_url})"
         )
 
         query = f"""
-        MATCH (p:Politician {{id: $politician_id}}), (a:Article {{url: $article_url}})
+        MATCH (p:Politician {{politician_id: $politician_id}}), (a:Article {{url: $article_url}})
         MERGE (p)-[r:{relationship_type.value}]->(a)
         SET r += $properties
         RETURN r
@@ -427,8 +446,10 @@ class Neo4jWriter:
         logger = self.logger
         logger.info(f"[BATCH IMPORT] Received {len(politicians_data)} politicians for import from source: {source}")
 
-        # Log incoming politician IDs for debugging
-        logger.info(f"[DEBUG] Received {len(politicians_data)} politicians. Sample IDs: {[p.get('politician_id') for p in politicians_data[:10]]}")
+        # Log incoming politician IDs and image URLs for debugging
+        logger.info(f"[DEBUG] Received {len(politicians_data)} politicians. Sample IDs: {[p.get('politician_id') for p in politicians_data[:5]]}")
+        logger.info(f"[IMAGE_URL_DEBUG] Sample incoming image URLs: {[(p.get('politician_id'), p.get('image_url')) for p in politicians_data[:5]]}")
+        
         # Deduplicate input by politician_id only (guaranteed unique, robust to int/str)
         deduped_dict = {}
         for p in politicians_data:
@@ -441,7 +462,8 @@ class Neo4jWriter:
                 continue
             deduped_dict[pid_str] = p
         deduped = list(deduped_dict.values())
-        logger.info(f"[BATCH IMPORT] Deduplicated to {len(deduped)} unique politicians by politician_id. Sample: {[p.get('politician_id') for p in deduped[:10]]}")
+        logger.info(f"[BATCH IMPORT] Deduplicated to {len(deduped)} unique politicians by politician_id. Sample: {[p.get('politician_id') for p in deduped[:5]]}")
+        logger.info(f"[IMAGE_URL_DEBUG] Sample deduplicated image URLs: {[(p.get('politician_id'), p.get('image_url')) for p in deduped[:5]]}")
 
         for i in range(0, len(deduped), batch_size):
             batch = deduped[i:i + batch_size]
@@ -452,11 +474,24 @@ class Neo4jWriter:
                 if not t['politician_id'] or not t['name']:
                     logger.warning(f"[SKIP] Empty ID or name: {t}")
                     continue
+                
+                # Ensure image_url is preserved and not empty
+                if not t.get('image_url'):
+                    logger.warning(f"[IMAGE_URL_DEBUG] Empty image_url after transform for politician {t['politician_id']}, {t['name']}")
+                    # If original had image_url but transform lost it, restore it
+                    original_image_url = p.get('image_url', '')
+                    if original_image_url:
+                        logger.info(f"[IMAGE_URL_DEBUG] Restoring original image_url for {t['politician_id']}: {original_image_url}")
+                        t['image_url'] = original_image_url
+                
                 transformed_batch.append(t)
+                
             if not transformed_batch:
                 logger.warning(f"[BATCH {i//batch_size+1}] No valid politicians in batch, skipping.")
                 continue
+                
             logger.info(f"[BATCH {i//batch_size+1}] Inserting {len(transformed_batch)} politicians. Sample: {[t['politician_id'] for t in transformed_batch[:3]]}")
+            logger.info(f"[IMAGE_URL_DEBUG] Sample transformed image URLs: {[(t['politician_id'], t['image_url']) for t in transformed_batch[:5]]}")
 
             query = """
             UNWIND $politicians as politician
@@ -465,11 +500,7 @@ class Neo4jWriter:
                 p.current_party = politician.current_party,
                 p.constituency = politician.constituency,
                 p.current_position = politician.current_position,
-                p.image_url = CASE 
-                    WHEN politician.image_url IS NOT NULL AND politician.image_url <> '' 
-                    THEN politician.image_url 
-                    ELSE p.image_url 
-                END,
+                p.image_url = politician.image_url,
                 p.is_active = politician.is_active,
                 p.first_name = politician.first_name,
                 p.last_name = politician.last_name,
@@ -486,13 +517,126 @@ class Neo4jWriter:
                     {'politicians': transformed_batch}
                 )
                 logger.info(f"[BATCH {i//batch_size+1}] Created {len(result)} politicians. Sample: {[r['politician_id'] for r in result[:3]]}")
+                
+                # Log returned image URLs to verify they were stored correctly
+                logger.info(f"[IMAGE_URL_DEBUG] Sample returned image URLs: {[(r['politician_id'], r.get('image_url', 'MISSING')) for r in result[:5]]}")
+                
+                # Verify image URLs were stored correctly
+                for r in result:
+                    if not r.get('image_url'):
+                        # Find the original politician data to compare
+                        original = next((p for p in transformed_batch if p['politician_id'] == r['politician_id']), None)
+                        if original and original.get('image_url'):
+                            logger.error(f"[IMAGE_URL_DEBUG] Image URL lost in database for {r['politician_id']}! Original: {original.get('image_url')}")
+                
                 created_ids.extend([r['politician_id'] for r in result])
             except Exception as e:
                 logger.error(f"[BATCH {i//batch_size+1}] ERROR: {str(e)}")
         logger.info(f"[BATCH IMPORT] Total politicians created: {len(created_ids)}")
         return created_ids
 
+    async def batch_create_articles(self, articles: List[Dict[str, Any]]) -> List[str]:
+        """
+        Create multiple articles in a batch operation for better performance
+        
+        Args:
+            articles: List of article dictionaries with title, url, source, etc.
+            
+        Returns:
+            List of created article IDs
+        """
+        if not articles:
+            return []
+            
+        # Generate IDs for articles that don't have them
+        for article in articles:
+            if 'id' not in article:
+                article['id'] = str(uuid.uuid4())
+        
+        # Prepare batch query
+        query = """
+        UNWIND $articles AS article
+        MERGE (a:Article {url: article.url})
+        ON CREATE SET 
+            a.id = article.id,
+            a.title = article.title,
+            a.source = article.source,
+            a.published_date = article.published_date,
+            a.content = article.content,
+            a.created_at = timestamp(),
+            a.is_fake_news = COALESCE(article.is_fake_news, false),
+            a.hate_speech_score = COALESCE(article.hate_speech_score, 0)
+        ON MATCH SET
+            a.title = article.title,
+            a.source = article.source,
+            a.published_date = article.published_date,
+            a.content = article.content,
+            a.updated_at = timestamp(),
+            a.is_fake_news = COALESCE(article.is_fake_news, a.is_fake_news),
+            a.hate_speech_score = COALESCE(article.hate_speech_score, a.hate_speech_score)
+        RETURN a.id as id
+        """
+        
+        # Execute batch query
+        try:
+            start_time = time.time()
+            result = await self.connection_manager.execute_query(query, {"articles": articles})
+            duration = time.time() - start_time
+            
+            # Extract IDs from result
+            article_ids = [record.get("id") for record in result]
+            
+            self.logger.info(f"Batch created {len(article_ids)} articles in {duration:.4f}s")
+            return article_ids
+            
+        except Exception as e:
+            self.logger.error(f"Error batch creating articles: {e}")
+            raise
     
+    async def batch_create_politician_article_relationships(
+        self, relationships: List[Dict[str, Any]]
+    ) -> int:
+        """
+        Create multiple politician-article relationships in a batch operation
+        
+        Args:
+            relationships: List of dictionaries with politician_id, article_url, and relationship_type
+            
+        Returns:
+            Number of relationships created
+        """
+        if not relationships:
+            return 0
+            
+        # Prepare batch query
+        query = """
+        UNWIND $relationships AS rel
+        MATCH (p:Politician {politician_id: rel.politician_id})
+        MATCH (a:Article {url: rel.article_url})
+        MERGE (p)-[r:MENTIONS]->(a)
+        ON CREATE SET r.created_at = timestamp()
+        ON MATCH SET r.updated_at = timestamp()
+        RETURN count(r) as count
+        """
+        
+        # Execute batch query
+        try:
+            start_time = time.time()
+            result = await self.connection_manager.execute_query(
+                query, {"relationships": relationships}
+            )
+            duration = time.time() - start_time
+            
+            # Get count from result
+            count = result[0].get("count") if result else 0
+            
+            self.logger.info(f"Batch created {count} politician-article relationships in {duration:.4f}s")
+            return count
+            
+        except Exception as e:
+            self.logger.error(f"Error batch creating relationships: {e}")
+            raise
+
     async def close(self):
         """Close the writer"""
         await self.connection_manager.close()
@@ -632,3 +776,183 @@ async def health_check() -> Dict[str, Any]:
             'error': str(e),
             'timestamp': datetime.now().isoformat()
         }
+
+# =============================================================================
+# NEO4J READER - OPTIMIZED READ OPERATIONS
+# =============================================================================
+
+class Neo4jReader:
+    """Class for reading data from Neo4j database"""
+
+    def __init__(self, connection_manager: Neo4jConnectionManager = None):
+        self.connection_manager = connection_manager or Neo4jConnectionManager()
+        self.logger = logging.getLogger(__name__)
+        self._cache = None
+        try:
+            from api.services.cache_service import get_cache
+            self._cache = get_cache()
+            self.logger.info("Cache service initialized for Neo4jReader")
+        except ImportError:
+            self.logger.warning("Cache service not available, proceeding without caching")
+
+    async def get_all_politicians(self, limit: int = 100, page: int = 1) -> List[Dict[str, Any]]:
+        """
+        Get all politicians with pagination
+        
+        Args:
+            limit: Maximum number of politicians to return
+            page: Page number (1-indexed)
+            
+        Returns:
+            List of politician dictionaries
+        """
+        # Calculate skip for pagination
+        skip = (page - 1) * limit
+        
+        # Check cache first
+        cache_key = f"politicians_list_{limit}_{page}"
+        if self._cache:
+            cached_result = self._cache.get(cache_key)
+            if cached_result:
+                self.logger.debug(f"Cache hit for {cache_key}")
+                return cached_result
+        
+        # Query with pagination and indexing
+        query = """
+        MATCH (p:Politician)
+        RETURN p
+        ORDER BY p.name
+        SKIP $skip
+        LIMIT $limit
+        """
+        
+        try:
+            start_time = time.time()
+            result = await self.connection_manager.execute_query(query, {"skip": skip, "limit": limit})
+            duration = time.time() - start_time
+            
+            # Transform results
+            politicians = []
+            for record in result:
+                politician_node = record.get("p")
+                if politician_node:
+                    politician_data = dict(politician_node.items())
+                    politicians.append(politician_data)
+            
+            self.logger.debug(f"Retrieved {len(politicians)} politicians in {duration:.4f}s")
+            
+            # Cache result
+            if self._cache:
+                self._cache.set(cache_key, politicians, ttl=300)  # Cache for 5 minutes
+                
+            return politicians
+            
+        except Exception as e:
+            self.logger.error(f"Error getting politicians: {e}")
+            return []
+
+    async def get_politician_by_id(self, politician_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get a politician by ID
+        
+        Args:
+            politician_id: ID of the politician
+            
+        Returns:
+            Politician dictionary or None if not found
+        """
+        # Check cache first
+        cache_key = f"politician_{politician_id}"
+        if self._cache:
+            cached_result = self._cache.get(cache_key)
+            if cached_result:
+                self.logger.debug(f"Cache hit for {cache_key}")
+                return cached_result
+        
+        # Query with index on id
+        query = """
+        MATCH (p:Politician {id: $id})
+        RETURN p
+        """
+        
+        try:
+            start_time = time.time()
+            result = await self.connection_manager.execute_query(query, {"id": politician_id})
+            duration = time.time() - start_time
+            
+            if not result:
+                self.logger.debug(f"Politician {politician_id} not found")
+                return None
+                
+            politician_node = result[0].get("p")
+            if not politician_node:
+                return None
+                
+            politician_data = dict(politician_node.items())
+            
+            self.logger.debug(f"Retrieved politician {politician_id} in {duration:.4f}s")
+            
+            # Cache result
+            if self._cache:
+                self._cache.set(cache_key, politician_data, ttl=600)  # Cache for 10 minutes
+                
+            return politician_data
+            
+        except Exception as e:
+            self.logger.error(f"Error getting politician by ID: {e}")
+            return None
+
+    async def get_news_by_politician(self, politician_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+        """
+        Get news articles related to a politician
+        
+        Args:
+            politician_id: ID of the politician
+            limit: Maximum number of articles to return
+            
+        Returns:
+            List of article dictionaries
+        """
+        # Check cache first
+        cache_key = f"news_for_politician_{politician_id}_{limit}"
+        if self._cache:
+            cached_result = self._cache.get(cache_key)
+            if cached_result:
+                self.logger.debug(f"Cache hit for {cache_key}")
+                return cached_result
+        
+        # Query with index on relationship
+        query = """
+        MATCH (p:Politician {id: $politician_id})-[:MENTIONS]->(a:Article)
+        WHERE NOT a.is_fake_news OR a.is_fake_news = false
+        RETURN a
+        ORDER BY a.published_date DESC
+        LIMIT $limit
+        """
+        
+        try:
+            start_time = time.time()
+            result = await self.connection_manager.execute_query(
+                query, {"politician_id": politician_id, "limit": limit}
+            )
+            duration = time.time() - start_time
+            
+            # Transform results
+            articles = []
+            for record in result:
+                article_node = record.get("a")
+                if article_node:
+                    article_data = dict(article_node.items())
+                    articles.append(article_data)
+            
+            self.logger.debug(f"Retrieved {len(articles)} articles for politician {politician_id} in {duration:.4f}s")
+            
+            # Cache result
+            if self._cache:
+                self._cache.set(cache_key, articles, ttl=300)  # Cache for 5 minutes
+                
+            return articles
+            
+        except Exception as e:
+            self.logger.error(f"Error getting news by politician: {e}")
+            return []

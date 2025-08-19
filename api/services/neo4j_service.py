@@ -63,8 +63,8 @@ class Neo4jService:
         query = """
         MATCH (p:Politician)
         WHERE 
-            ($party IS NULL OR p.party = $party)
-            AND ($active_only = False OR p.active = True)
+            ($party IS NULL OR p.current_party = $party)
+            AND ($active_only = False OR p.is_active = True)
         RETURN p
         ORDER BY p.name
         SKIP $skip
@@ -75,8 +75,8 @@ class Neo4jService:
         count_query = """
         MATCH (p:Politician)
         WHERE 
-            ($party IS NULL OR p.party = $party)
-            AND ($active_only = False OR p.active = True)
+            ($party IS NULL OR p.current_party = $party)
+            AND ($active_only = False OR p.is_active = True)
         RETURN count(p) AS total
         """
         
@@ -119,7 +119,8 @@ class Neo4jService:
         """
         # Base query for politician data
         query = """
-        MATCH (p:Politician {id: $id})
+        MATCH (p:Politician)
+        WHERE p.politician_id = $id OR p.id = $id
         RETURN p
         """
         
@@ -134,7 +135,9 @@ class Neo4jService:
         # Get latest news if requested
         if include_news:
             news_query = """
-            MATCH (p:Politician {id: $id})-[:MENTIONED_IN]->(n:News)
+            MATCH (p:Politician)
+            WHERE p.politician_id = $id OR p.id = $id
+            MATCH (p)-[:MENTIONS]->(n:Article)
             RETURN n
             ORDER BY n.published_date DESC
             LIMIT 5
@@ -143,12 +146,20 @@ class Neo4jService:
             news_result = await self.session.run(news_query, {"id": politician_id})
             news_records = await news_result.fetch_all()
             latest_news = [dict(record["n"]) for record in news_records]
+            # Normalize keys for API compatibility
+            for a in latest_news:
+                if "article_id" in a and "id" not in a:
+                    a["id"] = a["article_id"]
+                if "sentiment_score" in a and "sentiment" not in a:
+                    a["sentiment"] = a["sentiment_score"]
             politician["latest_news"] = latest_news
             
         # Get relationships if requested
         if include_relationships:
             relations_query = """
-            MATCH (p:Politician {id: $id})-[r]-(other:Politician)
+            MATCH (p:Politician)
+            WHERE p.politician_id = $id OR p.id = $id
+            MATCH (p)-[r]-(other:Politician)
             RETURN type(r) as type, other, r.strength as strength, r.evidence as evidence
             LIMIT 10
             """
@@ -240,7 +251,7 @@ class Neo4jService:
         """
         # Build query with parameters
         query = """
-        MATCH (n:News)
+        MATCH (n:Article)
         WHERE $source IS NULL OR n.source = $source
         RETURN n
         ORDER BY n.published_date DESC
@@ -250,7 +261,7 @@ class Neo4jService:
         
         # Count query
         count_query = """
-        MATCH (n:News)
+        MATCH (n:Article)
         WHERE $source IS NULL OR n.source = $source
         RETURN count(n) AS total
         """
@@ -263,6 +274,12 @@ class Neo4jService:
         })
         
         news_articles = [dict(record["n"]) for record in [record async for record in result]]
+        # Normalize keys for API compatibility
+        for a in news_articles:
+            if "article_id" in a and "id" not in a:
+                a["id"] = a["article_id"]
+            if "sentiment_score" in a and "sentiment" not in a:
+                a["sentiment"] = a["sentiment_score"]
         
         count_result = await self.session.run(count_query, {"source": source})
         count_record = await count_result.single()
@@ -289,7 +306,11 @@ class Neo4jService:
             Dict containing news articles and total count
         """
         # Check if politician exists
-        check_query = "MATCH (p:Politician {id: $id}) RETURN p"
+        check_query = """
+        MATCH (p:Politician)
+        WHERE p.politician_id = $id OR p.id = $id
+        RETURN p
+        """
         check_result = await self.session.run(check_query, {"id": politician_id})
         check_record = await check_result.single()
         
@@ -298,7 +319,9 @@ class Neo4jService:
         
         # Get news articles
         news_query = """
-        MATCH (p:Politician {id: $id})-[:MENTIONED_IN]->(n:News)
+        MATCH (p:Politician)
+        WHERE p.politician_id = $id OR p.id = $id
+        MATCH (p)-[:MENTIONS]->(n:Article)
         RETURN n
         ORDER BY n.published_date DESC
         SKIP $skip
@@ -307,7 +330,9 @@ class Neo4jService:
         
         # Count query
         count_query = """
-        MATCH (p:Politician {id: $id})-[:MENTIONED_IN]->(n:News)
+        MATCH (p:Politician)
+        WHERE p.politician_id = $id OR p.id = $id
+        MATCH (p)-[:MENTIONS]->(n:Article)
         RETURN count(n) AS total
         """
         
@@ -319,6 +344,12 @@ class Neo4jService:
         })
         
         news_articles = [dict(record["n"]) for record in [record async for record in result]]
+        # Normalize keys for API compatibility
+        for a in news_articles:
+            if "article_id" in a and "id" not in a:
+                a["id"] = a["article_id"]
+            if "sentiment_score" in a and "sentiment" not in a:
+                a["sentiment"] = a["sentiment_score"]
         
         count_result = await self.session.run(count_query, {"id": politician_id})
         count_record = await count_result.single()

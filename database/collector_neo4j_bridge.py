@@ -434,8 +434,18 @@ class CollectorNeo4jBridge:
             'constituency': politician_data.get('constituency', '').strip(),
             'bio': politician_data.get('bio', '').strip(),
             'active': politician_data.get('active', True),
-            'image_url': politician_data.get('image_url', '').strip()  # CRITICAL: Preserve image URLs
         }
+        
+        # Handle image_url with special care
+        original_image_url = politician_data.get('image_url', '')
+        validated_image_url = str(original_image_url or '').strip()
+        validated['image_url'] = validated_image_url
+        
+        # Log image URL validation for debugging
+        if original_image_url != validated_image_url:
+            self.logger.warning(f"[IMAGE_URL_VALIDATION] Image URL modified during validation for {politician_data.get('name')}: '{original_image_url}' -> '{validated_image_url}'")
+        else:
+            self.logger.debug(f"[IMAGE_URL_VALIDATION] Image URL preserved for {politician_data.get('name')}: '{validated_image_url}'")
 
         # Preserve and validate politician_id
         pid = politician_data.get('politician_id')
@@ -454,7 +464,7 @@ class CollectorNeo4jBridge:
                 validated[field] = politician_data[field]
 
         # Log validated data for debugging
-        self.logger.debug(f"[VALIDATION] Validated politician: name={validated.get('name')}, politician_id={validated.get('politician_id')}")
+        self.logger.debug(f"[VALIDATION] Validated politician: name={validated.get('name')}, politician_id={validated.get('politician_id')}, image_url={validated.get('image_url')}")
         return validated
     
     def _validate_article_data(self, article_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
