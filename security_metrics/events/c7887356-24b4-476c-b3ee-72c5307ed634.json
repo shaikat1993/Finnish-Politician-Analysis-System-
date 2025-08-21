@@ -1,0 +1,1 @@
+{"event_id": "c7887356-24b4-476c-b3ee-72c5307ed634", "timestamp": 1755793492.5845041, "event_type": "verification_result", "component": "verification_system", "severity": "low", "result": "allowed", "details": {"verification_type": "fact_check", "confidence": 0.85, "verification_method": "external_api"}, "user_id": null, "session_id": "8af58358-b2de-4414-a1f5-21062b0f537f"}
