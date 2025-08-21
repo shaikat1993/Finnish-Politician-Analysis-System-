@@ -39,6 +39,11 @@ class Settings(BaseSettings):
 
     # API Security
     CORS_ORIGINS: list[str] = ["*"]  # For production, specify specific origins
+    
+    # Security Monitoring Features
+    ENABLE_WEBSOCKET_MONITORING: bool = os.getenv("ENABLE_WEBSOCKET_MONITORING", "False").lower() == "true"
+    ENABLE_ANOMALY_DETECTION: bool = os.getenv("ENABLE_ANOMALY_DETECTION", "False").lower() == "true"
+    ENABLE_OPENTELEMETRY: bool = os.getenv("ENABLE_OPENTELEMETRY", "False").lower() == "true"
 
     # Caching and pagination
     CACHE_EXPIRY_SECONDS: int = 300  # 5 minutes

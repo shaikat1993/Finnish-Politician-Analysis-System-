@@ -34,14 +34,7 @@ from langchain_community.utilities import WikipediaAPIWrapper
 from langchain.tools.wikipedia.tool import WikipediaQueryRun
 
 from ..memory.shared_memory import SharedAgentMemory
-
-from langchain_openai import ChatOpenAI
-from langchain.memory import ConversationBufferMemory
-from langchain.schema import SystemMessage, HumanMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-
-
-from ..memory.shared_memory import SharedAgentMemory
+from ..security.security_decorators import secure_prompt, secure_output, verify_response, track_metrics
 
 class QueryAgent:
     """
@@ -133,6 +126,10 @@ You have access to:
 
 You work as part of a multi-agent system. Your query results help users discover insights and other agents perform their analysis tasks."""
 
+    @track_metrics()
+    @secure_prompt(strict_mode=True)
+    @secure_output(strict_mode=False)
+    @verify_response(verification_type="consistency")
     async def search_politicians(self, query: str, search_type: str = "hybrid") -> Dict[str, Any]:
         """
         Search for politicians using various search strategies
@@ -182,6 +179,10 @@ You work as part of a multi-agent system. Your query results help users discover
             )
             raise
     
+    @track_metrics()
+    @secure_prompt(strict_mode=True)
+    @secure_output(strict_mode=False)
+    @verify_response(verification_type="consistency")
     async def search_news(self, query: str, filters: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Search news articles with optional filters
@@ -221,6 +222,10 @@ You work as part of a multi-agent system. Your query results help users discover
             self.logger.error(f"Error in news search: {str(e)}")
             raise
     
+    @track_metrics()
+    @secure_prompt(strict_mode=True)
+    @secure_output(strict_mode=False)
+    @verify_response(verification_type="consistency")
     async def find_relationships(self, entity1: str, entity2: str = None, relationship_type: str = None) -> Dict[str, Any]:
         """
         Find relationships between political entities
@@ -262,6 +267,10 @@ You work as part of a multi-agent system. Your query results help users discover
             self.logger.error(f"Error in relationship query: {str(e)}")
             raise
     
+    @track_metrics()
+    @secure_prompt(strict_mode=True)
+    @secure_output(strict_mode=False)
+    @verify_response(verification_type="consistency")
     async def semantic_search(self, query: str, limit: int = 10, similarity_threshold: float = 0.7) -> Dict[str, Any]:
         """
         Perform semantic search across all content

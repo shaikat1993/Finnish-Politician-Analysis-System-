@@ -34,6 +34,8 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 
 from ..memory.shared_memory import SharedAgentMemory
+from ..security.security_decorators import secure_prompt, secure_output, verify_response, track_metrics
+
 
 class AnalysisAgent:
     """
@@ -125,6 +127,7 @@ When performing analysis:
 
 You work as part of a multi-agent system. Your analysis results help other agents make informed decisions."""
 
+    # Legacy sanitizer kept for backward compatibility
     def _sanitize_prompt(self, text: str) -> str:
         """Conservative input sanitizer to mitigate prompt injection.
         - Removes URLs and obvious role/override tokens
@@ -155,6 +158,10 @@ You work as part of a multi-agent system. Your analysis results help other agent
         text = re.sub(r"\s+", " ", text).strip()
         return text
 
+    @track_metrics()
+    @secure_prompt(strict_mode=True)
+    @secure_output(strict_mode=False)
+    @verify_response(verification_type="consistency")
     async def analyze_politicians(self, politician_data: List[Dict] = None) -> Dict[str, Any]:
         """
         Analyze politician profiles and voting patterns
@@ -176,11 +183,13 @@ You work as part of a multi-agent system. Your analysis results help other agent
                 )
                 politician_data = [m.content for m in memories if "politician" in m.content.get("operation", "")]
             
-            # Execute analysis using agent with sanitized input
-            _raw_input = f"Analyze politician data: {len(politician_data)} politicians. Focus on voting patterns, political positions, and key characteristics."
-            _safe_input = self._sanitize_prompt(_raw_input)
+            # Execute analysis using agent with OWASP LLM security
+            # Note: The secure_prompt decorator now handles sanitization
+            prompt = f"Analyze politician data: {len(politician_data)} politicians. Focus on voting patterns, political positions, and key characteristics."
+            
             result = await self.executor.ainvoke({
-                "input": _safe_input
+                "input": prompt,
+                "context": {"data_type": "politician_data", "record_count": len(politician_data) if politician_data else 0}
             })
             
             # Store results in shared memory
@@ -211,6 +220,10 @@ You work as part of a multi-agent system. Your analysis results help other agent
             )
             raise
     
+    @track_metrics()
+    @secure_prompt(strict_mode=True)
+    @secure_output(strict_mode=False)
+    @verify_response(verification_type="consistency")
     async def analyze_news(self, news_data: List[Dict] = None) -> Dict[str, Any]:
         """
         Analyze news articles for political sentiment and topics
@@ -232,11 +245,13 @@ You work as part of a multi-agent system. Your analysis results help other agent
                 )
                 news_data = [m.content for m in memories if "news" in m.content.get("operation", "")]
             
-            # Execute analysis using agent with sanitized input
-            _raw_input = f"Analyze news articles: {len(news_data)} articles. Focus on political sentiment, key topics, and media coverage patterns."
-            _safe_input = self._sanitize_prompt(_raw_input)
+            # Execute analysis using agent with OWASP LLM security
+            # Note: The secure_prompt decorator now handles sanitization
+            prompt = f"Analyze news articles: {len(news_data)} articles. Focus on political sentiment, key topics, and media coverage patterns."
+            
             result = await self.executor.ainvoke({
-                "input": _safe_input
+                "input": prompt,
+                "context": {"data_type": "news_data", "record_count": len(news_data) if news_data else 0}
             })
             
             # Store results in shared memory
@@ -267,6 +282,10 @@ You work as part of a multi-agent system. Your analysis results help other agent
             )
             raise
     
+    @track_metrics()
+    @secure_prompt(strict_mode=True)
+    @secure_output(strict_mode=False)
+    @verify_response(verification_type="factuality")
     async def generate_insights(self, analysis_type: str = "comprehensive") -> Dict[str, Any]:
         """
         Generate comprehensive insights from all available analysis
@@ -286,11 +305,13 @@ You work as part of a multi-agent system. Your analysis results help other agent
                 agent_id=self.agent_id
             )
             
-            # Execute insight generation using agent with sanitized input
-            _raw_input = f"Generate {analysis_type} insights from {len(analysis_memories)} analysis results. Identify key trends, patterns, and actionable recommendations."
-            _safe_input = self._sanitize_prompt(_raw_input)
+            # Execute insight generation using agent with OWASP LLM security
+            # Note: The secure_prompt decorator now handles sanitization
+            prompt = f"Generate {analysis_type} insights from {len(analysis_memories)} analysis results. Identify key trends, patterns, and actionable recommendations."
+            
             result = await self.executor.ainvoke({
-                "input": _safe_input
+                "input": prompt,
+                "context": {"analysis_type": analysis_type, "memory_count": len(analysis_memories)}
             })
             
             # Store results in shared memory
@@ -327,5 +348,11 @@ You work as part of a multi-agent system. Your analysis results help other agent
                 "insight_generation"
             ],
             "tools": [tool.name for tool in self.tools],
-            "status": "active"
+            "status": "active",
+            "security": {
+                "prompt_injection_protection": True,
+                "output_sanitization": True,
+                "response_verification": True,
+                "metrics_collection": True
+            }
         }

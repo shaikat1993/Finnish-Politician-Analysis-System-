@@ -35,7 +35,7 @@ class AnalysisDashboard:
             
         # Loading, error, or empty state
         if loading:
-            st.info("⏳ Loading shaikat politician details...")
+            st.info("⏳ Loading politician details...")
             return
         if error:
             st.error(f"❌ Failed to load details: {error}")

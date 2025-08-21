@@ -12,6 +12,7 @@ agent framework, featuring:
 - Agent Orchestrator: Production-grade workflow coordinator
 - Fault Tolerance: Error recovery and graceful degradation
 - Performance Monitoring: Agent statistics and system health tracking
+- Security Components: Prompt guarding, output sanitization, and response verification
 
 Architecture follows LangChain best practices for enterprise AI systems.
 """
@@ -23,16 +24,20 @@ from .agents import (
 )
 from .agent_orchestrator import AgentOrchestrator, get_agent_orchestrator
 
-# LangChain Tools for Agent Coordination
-
-
 # Shared Memory System
 from .memory import SharedAgentMemory, MemoryEntry
 
-# Legacy Components (maintained for backward compatibility)
-
-from .embeddings import VectorStoreManager
-
+# Security Components
+from .security import (
+    PromptGuard,
+    OutputSanitizer,
+    VerificationSystem,
+    SecurityMetricsCollector,
+    secure_prompt,
+    secure_output,
+    verify_response,
+    track_metrics
+)
 
 # Agent System Metadata
 __version__ = "2.0.0"
@@ -52,9 +57,15 @@ __all__ = [
     # Memory System
     'SharedAgentMemory',
     'MemoryEntry',
-    # Embeddings
-    
-    'VectorStoreManager',
+    # Security Components
+    'PromptGuard',
+    'OutputSanitizer',
+    'VerificationSystem',
+    'SecurityMetricsCollector',
+    'secure_prompt',
+    'secure_output',
+    'verify_response',
+    'track_metrics',
     # Metadata
     '__version__',
     '__architecture__',
@@ -81,6 +92,7 @@ def get_system_info():
             "fault_tolerant_workflows",
             "real_time_adaptation",
             "production_monitoring",
+            "security_components",
             "backward_compatibility"
         ],
         "supported_workflows": [
@@ -89,6 +101,12 @@ def get_system_info():
             "health_check",
             "relationship_analysis",
             "content_analysis"
+        ],
+        "security_components": [
+            "prompt_guarding",
+            "output_sanitization",
+            "response_verification",
+            "security_metrics"
         ]
     }
 
@@ -129,26 +147,15 @@ def get_available_agents():
                 "insight_generation"
             ]
         },
-        "storage": {
-            "class": "StorageAgent",
-            "capabilities": [
-                "neo4j_graph_storage",
-                "vector_database_storage",
-                "relationship_graph_creation",
-                "data_integrity_management",
-                "storage_error_handling",
-                "duplicate_data_management"
-            ]
-        },
         "query": {
             "class": "QueryAgent",
             "capabilities": [
                 "neo4j_graph_queries",
-                "vector_semantic_search",
                 "natural_language_query_processing",
                 "query_optimization",
                 "result_formatting",
-                "relationship_traversal"
+                "relationship_traversal",
+                "external_search_integration"
             ]
         }
     }

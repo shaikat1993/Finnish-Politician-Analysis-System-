@@ -92,7 +92,7 @@ class AgentOrchestrator:
         
         This workflow demonstrates the power of the specialized agent architecture:
         1. AnalysisAgent analyzes the collected content
-        2. StorageAgent stores everything in Neo4j and vector databases
+        2. QueryAgent retrieves and processes data
         """
         try:
             if not self.is_initialized:
@@ -116,39 +116,39 @@ class AgentOrchestrator:
                 memory_type="workflow_status"
             )
             
-            # Step 1: Data Collection
-            data_collection_agent = self.agents["data_collection"]
+            # Use only the agents that actually exist
+            analysis_agent = self.agents["analysis"]
+            query_agent = self.agents["query"]
+            
+            # Step 1: Data Collection using QueryAgent
+            politician_data = None
+            news_data = None
+            
             if sources and "politicians" in str(sources).lower():
-                politician_data = await data_collection_agent.collect_politicians(sources, limit)
-            else:
-                politician_data = None
+                self.logger.info("Collecting politician data using QueryAgent")
+                politician_data = await query_agent.search_politicians(
+                    query="all politicians", 
+                    search_type="exact"
+                )
                 
             if sources and "news" in str(sources).lower():
-                news_data = await data_collection_agent.collect_news(sources, limit, query)
-            else:
-                news_data = None
+                self.logger.info("Collecting news data using QueryAgent")
+                news_data = await query_agent.search_news(
+                    query=query or "recent political news"
+                )
             
-            # Step 2: Analysis
-            analysis_agent = self.agents["analysis"]
+            # Step 2: Analysis using AnalysisAgent
             analysis_results = {}
             if politician_data:
-                analysis_results["politicians"] = await analysis_agent.analyze_politicians()
+                analysis_results["politicians"] = await analysis_agent.analyze_politicians(politician_data)
             if news_data:
-                analysis_results["news"] = await analysis_agent.analyze_news()
+                analysis_results["news"] = await analysis_agent.analyze_news(news_data)
             
-            # Step 3: Relationship Extraction
-            relationship_agent = self.agents["relationship"]
-            relationships = await relationship_agent.extract_relationships()
-            
-            # Step 4: Storage
-            storage_agent = self.agents["storage"]
-            storage_results = {}
-            if politician_data:
-                storage_results["politicians"] = await storage_agent.store_politicians()
-            if news_data:
-                storage_results["news"] = await storage_agent.store_news()
-            if relationships:
-                storage_results["relationships"] = await storage_agent.store_relationships()
+            # Step 3: Generate insights if both data types are available
+            insights = None
+            if politician_data and news_data:
+                insights = await analysis_agent.generate_insights()
+                analysis_results["insights"] = insights
             
             # Update workflow status in shared memory
             await self.shared_memory.store_memory(
@@ -159,8 +159,7 @@ class AgentOrchestrator:
                     "results": {
                         "data_collection": {"politicians": bool(politician_data), "news": bool(news_data)},
                         "analysis": analysis_results,
-                        "relationships": relationships,
-                        "storage": storage_results
+                        "insights": bool(insights)
                     },
                     "completed_at": datetime.now().isoformat()
                 },
@@ -176,8 +175,7 @@ class AgentOrchestrator:
                 "results": {
                     "data_collection": {"politicians": bool(politician_data), "news": bool(news_data)},
                     "analysis": analysis_results,
-                    "relationships": relationships,
-                    "storage": storage_results
+                    "insights": bool(insights)
                 }
             }
             
