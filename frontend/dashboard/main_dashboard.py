@@ -160,7 +160,6 @@ class MainDashboard:
             # Generate some actual security events for testing if needed
             self._generate_test_security_events()
         except Exception as e:
-            import logging
             logging.error(f"Error initializing security dashboard: {e}")
             self.security = SecurityMetricsDashboard()
             
