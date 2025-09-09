@@ -1,0 +1,1 @@
+{"total_events": 3, "blocked_events": 2, "allowed_events": 1, "warning_events": 0, "components": {"prompt_guard": {"blocked": 1}, "output_sanitizer": {"blocked": 1}, "verification_system": {"allowed": 1}}, "severity_counts": {"medium": 1, "high": 1, "low": 1}, "avg_response_time": 0.16, "hourly_events": {"1": 3}}

@@ -11,6 +11,7 @@ from components.map import FinlandMap
 from components.chat import PoliticianChat, EnhancedPoliticianChat
 from components.analysis import AnalysisDashboard
 from components.research.security_dashboard import SecurityMetricsDashboard
+from components.lazy_mode import LazyMode  # Add import for LazyMode
 
 def render_politician_details(details, loading=False, error=None):
     container = st.empty()
@@ -151,6 +152,7 @@ class MainDashboard:
         self.map = FinlandMap(api_base_url)
         self.chat = EnhancedPoliticianChat(api_base_url)
         self.analysis = AnalysisDashboard()
+        self.lazy_mode = LazyMode(api_base_url)  # Initialize LazyMode component
         
         # Ensure the security metrics collector is properly initialized with actual data
         try:
@@ -466,8 +468,13 @@ class MainDashboard:
             with col1:
                 self.sidebar = Sidebar(self.api_base_url)
                 self.sidebar.render()
+                
+                # Add lazy mode control to sidebar
+                self.lazy_mode.render_control()
+                
             with col2:
-                tab1, tab2, tab3, tab4 = st.tabs(["Map", "Analysis", "Chat", "Security"])
+                # Add Lazy tab for lazy mode features
+                tab1, tab2, tab3, tab4, tab5 = st.tabs(["Map", "Analysis", "Chat", "Security", "Lazy Mode"])
                 with tab1:
                     self.map.render()
                     self._render_politician_grid()
@@ -511,6 +518,9 @@ class MainDashboard:
                     self.chat.render()
                 with tab4:
                     self.security.render()
+                with tab5:
+                    # Use the LazyMode render method
+                    self.lazy_mode.render()
         except Exception as e:
             self.logger.error(f"Error running dashboard: {e}")
             st.error("An error occurred while running the dashboard. Please check the logs.")

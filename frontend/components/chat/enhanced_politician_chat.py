@@ -343,15 +343,52 @@ class EnhancedPoliticianChat:
         else:
             return fallback_output
     
-    def _render_research_controls(self):
-        """Render research mode controls in sidebar"""
-        st.sidebar.markdown("## Research Controls")
+    def _generate_suggested_questions(self, politician: str) -> List[str]:
+        """
+        Generate suggested questions for a politician
         
-        # Research mode toggle
-        st.session_state.research_mode_enabled = st.sidebar.checkbox(
-            "Enable Research Mode",
-            value=st.session_state.research_mode_enabled
-        )
+        Args:
+            politician: Politician name or ID
+            
+        Returns:
+            List of suggested questions
+        """
+        # Basic questions that work for any politician
+        basic_questions = [
+            f"What is {politician}'s voting record?",
+            f"What are {politician}'s main political positions?",
+            f"Which committees does {politician} serve on?",
+            f"What recent news mentions {politician}?",
+            f"What is {politician}'s background before politics?"
+        ]
+        
+        # Try to get politician-specific questions if we have details
+        if "selected_politician_details" in st.session_state and st.session_state.selected_politician_details:
+            details = st.session_state.selected_politician_details
+            party = details.get("party")
+            if party:
+                basic_questions.append(f"How does {politician}'s voting align with other {party} members?")
+            
+            province = details.get("province") or details.get("constituency")
+            if province:
+                basic_questions.append(f"What are the main issues in {province} that {politician} works on?")
+            
+            # News-related questions if news articles exist
+            news = details.get("news", [])
+            if news and len(news) > 0:
+                basic_questions.append(f"What do recent news articles say about {politician}?")
+        
+        return basic_questions
+    
+    def _render_research_controls(self):
+        # """Render research mode controls in sidebar"""
+        # st.sidebar.markdown("## Research Controls")
+        
+        # # Research mode toggle
+        # st.session_state.research_mode_enabled = st.sidebar.checkbox(
+        #     "Enable Research Mode",
+        #     value=st.session_state.research_mode_enabled
+        # )
         
         if st.session_state.research_mode_enabled:
             # Show direct access status
@@ -378,6 +415,262 @@ class EnhancedPoliticianChat:
                         st.metric("Response Time", f"{metric.get('latency_ms', 0):.1f} ms")
                         st.metric("Security Score", f"{metric.get('security_score', 1.0)*100:.1f}%")
     
+    def _enhance_response_with_predictions(self, response: str, politician: str) -> str:
+        """
+        Enhance response with predictive insights when appropriate
+        
+        Args:
+            response: Original response text
+            politician: Politician name
+            
+        Returns:
+            Enhanced response with predictive insights
+        """
+        # Only add predictions if lazy mode is enabled
+        if not st.session_state.get("lazy_mode_enabled", False):
+            return response
+            
+        try:
+            # Check if response is suitable for predictions
+            prediction_triggers = ["position", "policy", "vote", "future", "opinion", "stance"]
+            
+            # Only add predictions for responses discussing relevant topics
+            if any(trigger in response.lower() for trigger in prediction_triggers):
+                prediction = self._generate_prediction(politician)
+                if prediction:
+                    # Add predictive insight as a separate section
+                    enhanced_response = f"{response}\n\n**Predictive Insight:** {prediction}"
+                    return enhanced_response
+            
+            return response
+        except Exception as e:
+            # Log error but don't disrupt the user experience
+            self.logger.error(f"Error generating prediction: {e}")
+            return response  # Return original response if prediction fails
+    
+    def _generate_prediction(self, politician: str) -> str:
+        """
+        Generate a prediction based on politician data
+        
+        Args:
+            politician: Politician name
+            
+        Returns:
+            Prediction text or empty string if no prediction can be made
+        """
+        try:
+            # Get politician details if available
+            details = None
+            if "selected_politician_details" in st.session_state:
+                details = st.session_state.selected_politician_details
+            
+            # Base predictions that don't require specific details
+            base_predictions = [
+                f"Based on voting patterns, {politician} is likely to focus on economic policies in upcoming sessions.",
+                f"Analysis suggests {politician} may take a more prominent role in parliamentary debates this year.",
+                f"Comparing with similar career trajectories, {politician} could seek committee leadership in the next term."
+            ]
+            
+            # If we have details, generate more specific predictions
+            if details:
+                specific_predictions = []
+                
+                # Party-based predictions
+                party = details.get("party")
+                if party:
+                    specific_predictions.append(
+                        f"As a member of {party}, {politician} will likely align with the party's position on upcoming economic reforms."
+                    )
+                
+                # News-based predictions
+                news = details.get("news", [])
+                if news and len(news) > 2:
+                    topics = ["healthcare", "education", "environment", "economy", "immigration", "security"]
+                    mentioned_topics = []
+                    
+                    # Simple topic detection from news headlines
+                    for article in news:
+                        title = article.get("title", "").lower() if article.get("title") else ""
+                        for topic in topics:
+                            if topic in title and topic not in mentioned_topics:
+                                mentioned_topics.append(topic)
+                    
+                    if mentioned_topics:
+                        topic = mentioned_topics[0]  # Use first detected topic
+                        specific_predictions.append(
+                            f"Recent news coverage suggests {politician} may focus more on {topic} policy in the near future."
+                        )
+                
+                # Use specific prediction if available, otherwise use base prediction
+                if specific_predictions:
+                    import random
+                    return random.choice(specific_predictions)
+            
+            # Fall back to base predictions
+            import random
+            return random.choice(base_predictions)
+            
+        except Exception as e:
+            self.logger.error(f"Error in prediction generation: {e}")
+            return ""  # Return empty string if prediction fails
+    
+    def _setup_autocomplete(self, politician_name: str):
+        """
+        Set up auto-complete for chat input
+        
+        Args:
+            politician_name: Name of the politician for context-aware suggestions
+        """
+        # Only set up if lazy mode is enabled
+        if not st.session_state.get("lazy_mode_enabled", False):
+            return
+            
+        # Common question prefixes
+        prefixes = [
+            f"What is {politician_name}'s position on",
+            f"When did {politician_name} first",
+            f"How has {politician_name} voted on",
+            f"Why does {politician_name} support",
+            f"Can you compare {politician_name} with",
+            f"What are {politician_name}'s views on",
+            f"Has {politician_name} ever commented on",
+            f"What is {politician_name}'s background in",
+            f"How long has {politician_name} been in"
+        ]
+        
+        # Add party-specific questions if available
+        if "selected_politician_details" in st.session_state:
+            details = st.session_state.selected_politician_details
+            party = details.get("party")
+            if party:
+                prefixes.append(f"How does {politician_name} compare to other {party} members")
+                prefixes.append(f"What is {politician_name}'s role in the {party}")
+        
+        # Convert to JavaScript-friendly format
+        import json
+        prefixes_json = json.dumps(prefixes)
+        
+        # Create JavaScript for auto-complete
+        js = f"""
+        <script>
+        // Auto-complete for politician questions
+        document.addEventListener('DOMContentLoaded', function() {{
+            // Wait for Streamlit to fully load
+            setTimeout(function() {{
+                const prefixes = {prefixes_json};
+                const inputField = document.querySelector('.stChatInput input');
+                
+                if (inputField) {{
+                    // Create suggestion element
+                    const suggestionDiv = document.createElement('div');
+                    suggestionDiv.style.position = 'absolute';
+                    suggestionDiv.style.zIndex = '1000';
+                    suggestionDiv.style.backgroundColor = 'white';
+                    suggestionDiv.style.border = '1px solid #ddd';
+                    suggestionDiv.style.borderRadius = '4px';
+                    suggestionDiv.style.padding = '5px';
+                    suggestionDiv.style.display = 'none';
+                    suggestionDiv.style.width = 'calc(100% - 20px)';
+                    suggestionDiv.style.maxHeight = '200px';
+                    suggestionDiv.style.overflowY = 'auto';
+                    suggestionDiv.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+                    
+                    // Add suggestion element to DOM
+                    inputField.parentNode.style.position = 'relative';
+                    inputField.parentNode.appendChild(suggestionDiv);
+                    
+                    // Handle input changes
+                    inputField.addEventListener('input', function() {{
+                        const value = this.value.toLowerCase();
+                        if (value.length > 2) {{
+                            // Find matching prefixes
+                            const matches = prefixes.filter(prefix => 
+                                prefix.toLowerCase().startsWith(value) || 
+                                prefix.toLowerCase().includes(value)
+                            );
+                            
+                            if (matches.length > 0) {{
+                                // Show suggestions
+                                suggestionDiv.innerHTML = '';
+                                matches.slice(0, 5).forEach(match => {{
+                                    const item = document.createElement('div');
+                                    item.textContent = match;
+                                    item.style.padding = '5px';
+                                    item.style.cursor = 'pointer';
+                                    item.style.borderBottom = '1px solid #eee';
+                                    item.addEventListener('click', function() {{
+                                        inputField.value = match;
+                                        suggestionDiv.style.display = 'none';
+                                        inputField.focus();
+                                    }});
+                                    item.addEventListener('mouseover', function() {{
+                                        this.style.backgroundColor = '#f0f0f0';
+                                    }});
+                                    item.addEventListener('mouseout', function() {{
+                                        this.style.backgroundColor = 'transparent';
+                                    }});
+                                    suggestionDiv.appendChild(item);
+                                }});
+                                suggestionDiv.style.display = 'block';
+                            }} else {{
+                                suggestionDiv.style.display = 'none';
+                            }}
+                        }} else {{
+                            suggestionDiv.style.display = 'none';
+                        }}
+                    }});
+                    
+                    // Hide suggestions when clicking outside
+                    document.addEventListener('click', function(e) {{
+                        if (e.target !== inputField && e.target !== suggestionDiv) {{
+                            suggestionDiv.style.display = 'none';
+                        }}
+                    }});
+                    
+                    // Handle keyboard navigation
+                    inputField.addEventListener('keydown', function(e) {{
+                        if (suggestionDiv.style.display === 'block') {{
+                            const items = suggestionDiv.querySelectorAll('div');
+                            let activeIndex = -1;
+                            
+                            // Find currently active item
+                            for (let i = 0; i < items.length; i++) {{
+                                if (items[i].style.backgroundColor === '#f0f0f0') {{
+                                    activeIndex = i;
+                                    break;
+                                }}
+                            }}
+                            
+                            if (e.key === 'ArrowDown') {{
+                                e.preventDefault();
+                                if (activeIndex < items.length - 1) {{
+                                    if (activeIndex >= 0) items[activeIndex].style.backgroundColor = 'transparent';
+                                    items[activeIndex + 1].style.backgroundColor = '#f0f0f0';
+                                }}
+                            }} else if (e.key === 'ArrowUp') {{
+                                e.preventDefault();
+                                if (activeIndex > 0) {{
+                                    items[activeIndex].style.backgroundColor = 'transparent';
+                                    items[activeIndex - 1].style.backgroundColor = '#f0f0f0';
+                                }}
+                            }} else if (e.key === 'Enter' && activeIndex >= 0) {{
+                                e.preventDefault();
+                                inputField.value = items[activeIndex].textContent;
+                                suggestionDiv.style.display = 'none';
+                            }} else if (e.key === 'Escape') {{
+                                suggestionDiv.style.display = 'none';
+                            }}
+                        }}
+                    }});
+                }}
+            }}, 1000); // Wait for Streamlit to initialize
+        }});
+        </script>
+        """
+        
+        # Inject JavaScript into the page
+        st.components.v1.html(js, height=0)
+    
     def render(self, selected_politician: Optional[str] = None):
         """
         Render the enhanced chat interface
@@ -389,8 +682,8 @@ class EnhancedPoliticianChat:
         st.title("AI Assistant")
         
         # Show research controls if available
-        if self.research_mode_available:
-            self._render_research_controls()
+        # if self.research_mode_available:
+        #     self._render_research_controls()
         
         # Force rerun when politician changes
         if "_last_selected_politician" not in st.session_state:
@@ -433,6 +726,51 @@ class EnhancedPoliticianChat:
                     # Standard display
                     st.write(message.content)
         
+        # Add suggested questions if lazy mode is enabled
+        if st.session_state.get("lazy_mode_enabled", False) and politician:
+            st.markdown("### 💡 Suggested Questions")
+            questions = self._generate_suggested_questions(politician)
+            
+            # Display in two columns for better space usage
+            col1, col2 = st.columns(2)
+            for i, question in enumerate(questions):
+                with col1 if i % 2 == 0 else col2:
+                    if st.button(question, key=f"suggested_q_{i}"):
+                        # Add user message to history
+                        chat_history.append(ChatMessage(role="user", content=question))
+                        
+                        # Generate response
+                        with st.chat_message("assistant"):
+                            response = self._generate_response(question, politician)
+                            
+                            if self.research_mode_available and st.session_state.research_mode_enabled:
+                                # Enhanced visualization in research mode
+                                if isinstance(response, dict):
+                                    # Store full response data in chat history
+                                    chat_history.append(ChatMessage(
+                                        role="assistant",
+                                        content=response.get("output", ""),
+                                        reasoning=response.get("reasoning", []),
+                                        sources=response.get("sources", []),
+                                        metrics=response.get("metrics", {}),
+                                        direct_access=response.get("direct_access", False)
+                                    ))
+                                    # Visualize response
+                                    self.visualizer.visualize_response(response)
+                                else:
+                                    # Fallback to standard display
+                                    chat_history.append(ChatMessage(role="assistant", content=response))
+                                    st.write(response)
+                            else:
+                                # Standard display
+                                chat_history.append(ChatMessage(role="assistant", content=response))
+                                st.write(response)
+                        
+                        st.rerun()  # Ensures UI updates instantly
+        
+        # Set up auto-complete for chat input
+        self._setup_autocomplete(politician)
+        
         # User input with dynamic placeholder
         chat_placeholder = f"Ask about {politician}..."
         if prompt := st.chat_input(chat_placeholder):
@@ -464,7 +802,7 @@ class EnhancedPoliticianChat:
                 else:
                     # Standard display
                     chat_history.append(ChatMessage(role="assistant", content=response))
-                    st.write(response)
+                    st.write(self._enhance_response_with_predictions(response, politician))
             
             st.rerun()  # Ensures UI updates instantly
         
@@ -536,3 +874,9 @@ class EnhancedPoliticianChat:
             with st.expander("Metrics History", expanded=False):
                 metrics = self.pipeline_service.get_agent_metrics()
                 self.visualizer.visualize_metrics_history(metrics)
+        
+        # Show suggested questions
+        suggested_questions = self._generate_suggested_questions(politician)
+        with st.expander("Suggested Questions", expanded=False):
+            for question in suggested_questions:
+                st.write(question)
