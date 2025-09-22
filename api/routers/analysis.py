@@ -10,6 +10,8 @@ from typing import List, Dict, Any, Optional
 import asyncio
 import time
 import uuid
+import json
+from pathlib import Path
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -37,9 +39,193 @@ router = APIRouter(
     },
 )
 
+# File-based backup for Docker environment
+DOCKER_CACHE_DIR = Path("/app/cache")
+if os.environ.get("ENVIRONMENT") == "docker":
+    # Docker environment
+    CACHE_DIR = DOCKER_CACHE_DIR
+else:
+    # Local environment
+    CACHE_DIR = Path(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))) / "cache"
+
+if not CACHE_DIR.exists():
+    try:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        print(f"Created cache directory: {CACHE_DIR}")
+    except Exception as e:
+        print(f"Could not create cache directory: {e}")
+        # Fallback to a directory that should be writable
+        CACHE_DIR = Path.home() / ".fpas_cache"
+        CACHE_DIR.mkdir(exist_ok=True)
+        print(f"Using fallback cache directory: {CACHE_DIR}")
+
 # In-memory store for analysis results
 # In production, use a persistent storage solution like Redis
 analysis_results = {}
+
+# Query cache for faster responses to similar questions
+query_cache = {}
+
+def save_result(analysis_id, data):
+    """Save result to both memory and file (for Docker)"""
+    # Save to memory
+    analysis_results[analysis_id] = data
+    
+    # If this is a completed result, also cache by query for faster future responses
+    if data.get("status") == "completed" and "query" in data and "result" in data:
+        # Normalize the query (lowercase, remove extra spaces)
+        query_key = " ".join(data["query"].lower().split())
+        
+        # Store in query cache with timestamp
+        query_cache[query_key] = {
+            "result": data["result"],
+            "timestamp": time.time(),
+            "original_id": analysis_id
+        }
+    
+    # Also save to file for Docker persistence
+    try:
+        # Create a serializable copy of the data
+        serializable_data = {}
+        for key, value in data.items():
+            # Handle special cases that aren't JSON serializable
+            if key == "result" and isinstance(value, dict):
+                # Create a clean copy of the result
+                result_copy = {}
+                for k, v in value.items():
+                    # Convert non-serializable objects to strings
+                    if isinstance(v, (str, int, float, bool, type(None))):
+                        result_copy[k] = v
+                    elif isinstance(v, list):
+                        # Handle lists with potential non-serializable items
+                        result_copy[k] = [str(item) if not isinstance(item, (str, int, float, bool, dict, type(None))) else item for item in v]
+                    else:
+                        # Convert other types to string representation
+                        result_copy[k] = str(v)
+                serializable_data[key] = result_copy
+            elif isinstance(value, (str, int, float, bool, type(None))):
+                # Basic types are directly serializable
+                serializable_data[key] = value
+            else:
+                # Convert other types to string
+                serializable_data[key] = str(value)
+        
+        # Add timestamp if not present
+        if "timestamp" not in serializable_data:
+            serializable_data["timestamp"] = time.time()
+            
+        cache_file = CACHE_DIR / f"{analysis_id}.json"
+        with open(cache_file, 'w') as f:
+            json.dump(serializable_data, f)
+            
+        # Verify the file was written correctly
+        try:
+            with open(cache_file, 'r') as f:
+                json.load(f)
+        except json.JSONDecodeError:
+            print(f"Warning: Created corrupted JSON file for {analysis_id}. Removing it.")
+            cache_file.unlink()
+            
+    except Exception as e:
+        print(f"Warning: Could not save to file cache: {e}")
+    
+    return data
+
+def get_result(analysis_id):
+    """Get result from memory or file (for Docker)"""
+    # Try memory first (fastest)
+    if analysis_id in analysis_results:
+        return analysis_results[analysis_id]
+    
+    # Try file as fallback (for Docker)
+    try:
+        cache_file = CACHE_DIR / f"{analysis_id}.json"
+        if cache_file.exists():
+            with open(cache_file, 'r') as f:
+                data = json.load(f)
+                # Update memory cache
+                analysis_results[analysis_id] = data
+                return data
+    except Exception as e:
+        print(f"Warning: Could not read from file cache: {e}")
+    
+    return None
+
+def find_similar_query(query, max_age_hours=24):
+    """Find a similar query in the cache"""
+    if not query:
+        return None
+        
+    # Normalize the query
+    query_key = " ".join(query.lower().split())
+    
+    # Check for exact match first
+    if query_key in query_cache:
+        cached = query_cache[query_key]
+        
+        # Check if it's not too old
+        if (time.time() - cached.get("timestamp", 0)) < (max_age_hours * 3600):
+            return cached
+    
+    # TODO: Add fuzzy matching for similar queries
+    # This would require a more sophisticated algorithm
+    
+    return None
+
+def clean_cache_directory():
+    """Clean up corrupted cache files"""
+    try:
+        print(f"Cleaning up cache directory: {CACHE_DIR}")
+        for cache_file in CACHE_DIR.glob("*.json"):
+            try:
+                # Try to read the file to see if it's valid JSON
+                with open(cache_file, 'r') as f:
+                    json.load(f)
+            except json.JSONDecodeError:
+                # If it's not valid JSON, delete the file
+                print(f"Removing corrupted cache file: {cache_file}")
+                cache_file.unlink()
+    except Exception as e:
+        print(f"Error cleaning cache directory: {e}")
+
+@router.on_event("startup")
+async def startup_event():
+    """Initialize the API on startup"""
+    # Clean up corrupted cache files first
+    clean_cache_directory()
+    
+    # Ensure cache directory exists
+    try:
+        if not CACHE_DIR.exists():
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            print(f"Created cache directory: {CACHE_DIR}")
+        
+        # Load existing results from file cache
+        file_count = 0
+        for cache_file in CACHE_DIR.glob("*.json"):
+            try:
+                with open(cache_file, 'r') as f:
+                    analysis_id = cache_file.stem
+                    data = json.load(f)
+                    analysis_results[analysis_id] = data
+                    file_count += 1
+                    
+                    # Also populate the query cache
+                    if data.get("status") == "completed" and "query" in data and "result" in data:
+                        query_key = " ".join(data["query"].lower().split())
+                        query_cache[query_key] = {
+                            "result": data["result"],
+                            "timestamp": data.get("timestamp", time.time()),
+                            "original_id": analysis_id
+                        }
+            except Exception as e:
+                print(f"Error loading cache file {cache_file}: {e}")
+        
+        if file_count > 0:
+            print(f"Loaded {file_count} analysis results from file cache")
+            print(f"Populated query cache with {len(query_cache)} entries")
+    except Exception as e:
+        print(f"Warning: Cache initialization failed: {e}")
 
 @router.post(
     "/relationship-network",
@@ -183,11 +369,11 @@ async def run_custom_analysis(
     """
     try:
         # Update status to in-progress
-        analysis_results[analysis_id] = {
+        save_result(analysis_id, {
             "status": "processing",
             "query": query,
             "start_time": time.time()
-        }
+        })
         
         # Run the analysis using the AI pipeline
         supervisor_agent = ai_service
@@ -207,21 +393,24 @@ async def run_custom_analysis(
         )
         
         # Update status to completed
-        processing_time = time.time() - analysis_results[analysis_id]["start_time"]
-        analysis_results[analysis_id] = {
+        cached_data = get_result(analysis_id)
+        start_time = cached_data.get("start_time", time.time() - 5) if cached_data else time.time() - 5
+        processing_time = time.time() - start_time
+        
+        save_result(analysis_id, {
             "status": "completed",
             "query": query,
             "result": result,
             "processing_time": processing_time
-        }
+        })
         
     except Exception as e:
         # Update status to failed
-        analysis_results[analysis_id] = {
+        save_result(analysis_id, {
             "status": "failed",
             "query": query,
             "error": str(e)
-        }
+        })
 
 @router.post(
     "/custom",
@@ -245,6 +434,34 @@ async def submit_custom_analysis(
         dict: Analysis task information and status URL
     """
     try:
+        # Check if a similar query exists in the cache
+        cached = find_similar_query(request.query)
+        if cached:
+            # Generate a new ID for this request
+            analysis_id = str(uuid.uuid4())
+            
+            # Create an instant response using the cached result
+            instant_result = {
+                "status": "completed",
+                "query": request.query,
+                "result": cached["result"],
+                "processing_time": 0,
+                "cached": True,
+                "timestamp": time.time()
+            }
+            
+            # Save this result with the new ID
+            save_result(analysis_id, instant_result)
+            
+            # Return success with the new ID
+            return {
+                "status": "accepted",
+                "analysis_id": analysis_id,
+                "query": request.query,
+                "status_url": f"/analysis/status/{analysis_id}",
+                "cached": True
+            }
+        
         # Generate a unique ID for the analysis task
         analysis_id = str(uuid.uuid4())
         
@@ -289,13 +506,14 @@ async def get_analysis_status(
     Returns:
         dict: Analysis status and results if completed
     """
-    if analysis_id not in analysis_results:
+    result = get_result(analysis_id)
+    if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Analysis task with ID {analysis_id} not found"
         )
         
-    return analysis_results[analysis_id]
+    return result
 
 @router.get(
     "/sentiment/politicians",

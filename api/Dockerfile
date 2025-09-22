@@ -6,11 +6,15 @@ WORKDIR /app
 # Install system dependencies (if needed)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install
 COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install missing dependency
+RUN pip install --no-cache-dir mwparserfromhell
 
 # Copy API source
 COPY . /app

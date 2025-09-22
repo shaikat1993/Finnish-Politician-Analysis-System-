@@ -8,6 +8,9 @@ import asyncio
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
+# Set up module-level logger
+logger = logging.getLogger(__name__)
+
 # Minimal QueryTool implementation (DB tool)
 try:
     from langchain.tools import BaseTool
@@ -24,14 +27,143 @@ class QueryTool(BaseTool):
     async def _arun(self, input: str) -> str:
         return self._run(input)
 
+class NewsSearchTool(BaseTool):
+    """Tool for searching news about Finnish politicians using internal collectors."""
+    
+    name: str = "news_search"
+    description: str = "Search for news about Finnish politicians from multiple Finnish news sources"
+    
+    def _run(self, query: str) -> str:
+        """Run the Finnish news search using internal collectors."""
+        try:
+            import sys
+            import os
+            import json
+            import logging
+            import re
+            from datetime import datetime, timedelta
+            
+            # Add data_collection to path
+            sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'data_collection'))
+            
+            # Import collectors
+            from data_collection.news.yle_news_collector import YleNewsCollector
+            from data_collection.news.iltalehti_collector import IltalehtCollector
+            
+            # Calculate date range (last 3 months)
+            end_date = datetime.now().strftime('%Y-%m-%d')
+            start_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d')
+            
+            logger.info(f"Searching for news about '{query}' from {start_date} to {end_date}")
+            results = []
+            
+            # Try YLE collector first
+            try:
+                # YLE collector requires API credentials
+                try:
+                    yle_collector = YleNewsCollector()
+                    yle_articles = yle_collector.get_politician_articles(
+                        politician_name=query,
+                        start_date=start_date,
+                        end_date=end_date,
+                        limit=10
+                    )
+                    if yle_articles:
+                        results.extend(yle_articles)
+                        logger.info(f"Found {len(yle_articles)} YLE articles about {query}")
+                except ValueError as ve:
+                    # This happens if YLE API credentials are missing
+                    logger.warning(f"YLE collector not available: {str(ve)}")
+            except Exception as e:
+                logger.error(f"Error with YLE collector: {str(e)}")
+            
+            # Try Iltalehti collector
+            try:
+                il_collector = IltalehtCollector()
+                il_articles = il_collector.get_politician_articles(
+                    politician_name=query,
+                    start_date=start_date,
+                    end_date=end_date,
+                    limit=10
+                )
+                if il_articles:
+                    results.extend(il_articles)
+                    logger.info(f"Found {len(il_articles)} Iltalehti articles about {query}")
+            except Exception as e:
+                logger.error(f"Error with Iltalehti collector: {str(e)}")
+            
+            # Filter results to ensure they're relevant
+            filtered_results = []
+            seen_urls = set()
+            
+            # Split query into words for better matching
+            query_words = query.lower().split()
+            
+            for article in results:
+                # Handle both dict and object formats
+                if isinstance(article, dict):
+                    title = article.get('title', '')
+                    url = article.get('url', '')
+                    date = article.get('published_date', '')
+                    source = article.get('source', '')
+                    content = article.get('content', '')
+                else:
+                    title = getattr(article, 'title', '')
+                    url = getattr(article, 'url', '')
+                    date = getattr(article, 'published_date', '')
+                    source = getattr(article, 'source', 'unknown')
+                    content = getattr(article, 'content', '')
+                
+                # Skip if URL is empty or a navigation link or already seen
+                if not url or url.startswith('mailto:') or not title or url in seen_urls:
+                    continue
+                    
+                # Check if the article is actually about the politician
+                # Look for the politician's name in the title or content
+                title_lower = title.lower()
+                content_lower = content.lower() if content else ''
+                
+                # Check if all words in the query appear in title or content
+                is_relevant = all(word in title_lower or word in content_lower for word in query_words)
+                
+                if is_relevant:
+                    filtered_results.append({
+                        'title': title,
+                        'url': url,
+                        'date': date,
+                        'source': source
+                    })
+                    seen_urls.add(url)
+            
+            # Format results
+            if filtered_results:
+                formatted_results = []
+                for article in filtered_results:
+                    formatted_results.append(f"- [{article['title']}]({article['url']}) - {article['source']} ({article['date']})")
+                
+                logger.info(f"Returning {len(formatted_results)} relevant news articles")
+                return "Found the following news articles about the politician:\n\n" + "\n\n".join(formatted_results)
+            else:
+                logger.warning(f"No relevant news articles found about {query}")
+                return f"No relevant news articles found about {query} in Finnish news sources."
+            
+        except Exception as e:
+            logger.error(f"Error searching Finnish news: {str(e)}")
+            return f"Error searching Finnish news: {str(e)}"
+    
+    async def _arun(self, query: str) -> str:
+        """Run the Finnish news search asynchronously."""
+        return self._run(query)
+
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain_openai import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import SystemMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.tools import BaseTool
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_community.utilities import WikipediaAPIWrapper
-from langchain.tools.wikipedia.tool import WikipediaQueryRun
+from langchain_community.tools import WikipediaQueryRun
 
 from ..memory.shared_memory import SharedAgentMemory
 from ..security.security_decorators import secure_prompt, secure_output, verify_response, track_metrics
@@ -48,10 +180,9 @@ class QueryAgent:
     - Support both structured and natural language queries
     """
     
-    def __init__(self, shared_memory: SharedAgentMemory, openai_api_key: str = None):
+    def __init__(self, shared_memory: SharedAgentMemory, openai_api_key: str = None) -> None:
         self.agent_id = "query_agent"
         self.shared_memory = shared_memory
-        self.logger = logging.getLogger(__name__)
         
         # Initialize LLM
         self.llm = ChatOpenAI(
@@ -65,7 +196,8 @@ class QueryAgent:
         self.tools = [
             QueryTool(),  # Neo4j/vector DB tool
             WikipediaQueryRun(api_wrapper=wikipedia_api),
-            DuckDuckGoSearchRun()
+            DuckDuckGoSearchRun(),
+            NewsSearchTool()
         ]
         
         # Create agent prompt
@@ -95,7 +227,7 @@ class QueryAgent:
             max_iterations=5
         )
         
-        self.logger.info(f"QueryAgent initialized with {len(self.tools)} tools")
+        logger.info(f"QueryAgent initialized with {len(self.tools)} tools")
     
     def _get_system_prompt(self) -> str:
         return """
@@ -105,24 +237,23 @@ Your mission is to answer ANY question about a selected Finnish politician with 
 
 **Answering Strategy:**
 1. ALWAYS first use Neo4j (the graph database) and the vector database (via QueryTool) to answer the question.
-2. If you cannot fully answer from Neo4j/vector DB, use Wikipedia and web search tools to supplement your answer.
+2. If you cannot fully answer from Neo4j/vector DB, use specialized news search and Wikipedia tools to supplement your answer.
 3. Combine and synthesize information from multiple sources for the most complete answer.
 4. Always cite your sources or explain how you arrived at the answer.
 
 You have access to:
 - QueryTool: for database queries
 - WikipediaQueryRun: for Wikipedia lookups
-- DuckDuckGoSearchRun: for live web search
-    - DuckDuckGoSearchRun: for live web search
-    - Aggregation and statistical queries
-    - Temporal queries for trend analysis
+- DuckDuckGoSearchRun: for general web search
+- NewsSearchTool: for searching Finnish news sources about politicians (PREFERRED for news queries)
 
-    When processing queries:
-    - Use the QueryTool for all database operations
-    - Analyze user intent to determine optimal query strategy
-    - Combine graph and vector search when appropriate
-    - Format results for maximum clarity and usefulness
-    - Store query results in shared memory for caching
+When processing queries:
+- Use the QueryTool for all database operations
+- Use NewsSearchTool for any news-related queries about Finnish politicians
+- Analyze user intent to determine optimal query strategy
+- Combine graph and vector search when appropriate
+- Format results for maximum clarity and usefulness
+- Store query results in shared memory for caching
 
 You work as part of a multi-agent system. Your query results help users discover insights and other agents perform their analysis tasks."""
 
@@ -142,7 +273,7 @@ You work as part of a multi-agent system. Your query results help users discover
             Search results with politician data
         """
         try:
-            self.logger.info(f"Searching politicians with query: {query}")
+            logger.info(f"Searching politicians with query: {query}")
             
             # Execute search using agent
             result = await self.executor.ainvoke({
@@ -162,11 +293,11 @@ You work as part of a multi-agent system. Your query results help users discover
                 memory_type="query_result"
             )
             
-            self.logger.info("Politician search completed successfully")
+            logger.info("Politician search completed successfully")
             return result
             
         except Exception as e:
-            self.logger.error(f"Error in politician search: {str(e)}")
+            logger.error(f"Error in politician search: {str(e)}")
             await self.shared_memory.store_memory(
                 agent_id=self.agent_id,
                 content={
@@ -195,7 +326,7 @@ You work as part of a multi-agent system. Your query results help users discover
             News search results with articles and metadata
         """
         try:
-            self.logger.info(f"Searching news with query: {query}")
+            logger.info(f"Searching news with query: {query}")
             
             # Execute search using agent
             result = await self.executor.ainvoke({
@@ -215,11 +346,11 @@ You work as part of a multi-agent system. Your query results help users discover
                 memory_type="query_result"
             )
             
-            self.logger.info("News search completed successfully")
+            logger.info("News search completed successfully")
             return result
             
         except Exception as e:
-            self.logger.error(f"Error in news search: {str(e)}")
+            logger.error(f"Error in news search: {str(e)}")
             raise
     
     @track_metrics()
@@ -239,7 +370,7 @@ You work as part of a multi-agent system. Your query results help users discover
             Relationship query results with connection details
         """
         try:
-            self.logger.info(f"Finding relationships for entity: {entity1}")
+            logger.info(f"Finding relationships for entity: {entity1}")
             
             # Execute relationship query using agent
             result = await self.executor.ainvoke({
@@ -260,11 +391,11 @@ You work as part of a multi-agent system. Your query results help users discover
                 memory_type="query_result"
             )
             
-            self.logger.info("Relationship query completed successfully")
+            logger.info("Relationship query completed successfully")
             return result
             
         except Exception as e:
-            self.logger.error(f"Error in relationship query: {str(e)}")
+            logger.error(f"Error in relationship query: {str(e)}")
             raise
     
     @track_metrics()
@@ -284,7 +415,7 @@ You work as part of a multi-agent system. Your query results help users discover
             Semantic search results with similarity scores
         """
         try:
-            self.logger.info(f"Performing semantic search with query: {query}")
+            logger.info(f"Performing semantic search with query: {query}")
             
             # Execute semantic search using agent
             result = await self.executor.ainvoke({
@@ -305,11 +436,11 @@ You work as part of a multi-agent system. Your query results help users discover
                 memory_type="query_result"
             )
             
-            self.logger.info("Semantic search completed successfully")
+            logger.info("Semantic search completed successfully")
             return result
             
         except Exception as e:
-            self.logger.error(f"Error in semantic search: {str(e)}")
+            logger.error(f"Error in semantic search: {str(e)}")
             await self.shared_memory.store_memory(
                 agent_id=self.agent_id,
                 content={

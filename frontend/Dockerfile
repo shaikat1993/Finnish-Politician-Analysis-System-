@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install specific version of streamlit_folium that has st_folium function
+RUN pip install --no-cache-dir streamlit_folium==0.11.0
+
 # Copy frontend source
 COPY . /app
 
@@ -19,4 +22,4 @@ COPY . /app
 EXPOSE 8501
 
 # Entrypoint: run Streamlit app
-CMD ["streamlit", "run", "frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]

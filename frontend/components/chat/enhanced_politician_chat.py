@@ -103,8 +103,8 @@ class EnhancedPoliticianChat:
                         status_url = data["status_url"]
                         self.logger.info(f"Received status URL: {status_url}")
                         start_time = time.time()
-                        max_wait = 30  # seconds
-                        poll_interval = 1.5
+                        max_wait = 60  # seconds
+                        poll_interval = 2.0
                         
                         while True:
                             try:
@@ -112,10 +112,15 @@ class EnhancedPoliticianChat:
                                 self.logger.info(f"Polling status at: {poll_url}")
                                 poll_response = requests.get(
                                     poll_url,
-                                    timeout=10
+                                    timeout=5
                                 )
                                 poll_response.raise_for_status()
                                 poll_data = poll_response.json()
+                                
+                                # Check if this is a cached response
+                                if poll_data.get("cached", False):
+                                    self.logger.info("Found cached response, returning immediately")
+                                    return poll_data.get("result", {}).get("output", "I found a similar question that was asked before.")
                                 
                                 if poll_data.get("status") == "completed":
                                     # AI answer is ready
@@ -249,6 +254,11 @@ class EnhancedPoliticianChat:
                                 poll_response.raise_for_status()
                                 poll_data = poll_response.json()
                                 
+                                # Check if this is a cached response
+                                if poll_data.get("cached", False):
+                                    self.logger.info("Found cached response, returning immediately")
+                                    return poll_data.get("result", {}).get("output", "I found a similar question that was asked before.")
+                                
                                 if poll_data.get("status") == "completed":
                                     # AI answer is ready
                                     self.logger.info("Analysis completed successfully")
@@ -367,7 +377,7 @@ class EnhancedPoliticianChat:
             details = st.session_state.selected_politician_details
             party = details.get("party")
             if party:
-                basic_questions.append(f"How does {politician}'s voting align with other {party} members?")
+                basic_questions.append(f"How does {politician} compare to other {party} members")
             
             province = details.get("province") or details.get("constituency")
             if province:

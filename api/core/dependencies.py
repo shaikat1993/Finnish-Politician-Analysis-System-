@@ -72,14 +72,20 @@ async def get_analytics_service():
 async def get_ai_pipeline_service():
     """
     Get AI pipeline service (SupervisorAgent) from the existing project
-    
+
     Returns:
         SupervisorAgent: AI pipeline supervisor agent
     """
     try:
         from ai_pipeline.agent_orchestrator import AgentOrchestrator
-        return AgentOrchestrator()
+        print("DEBUG: Creating AgentOrchestrator instance...")
+        orchestrator = AgentOrchestrator()
+        print("DEBUG: AgentOrchestrator created successfully")
+        return orchestrator
     except Exception as e:
+        import traceback
+        print(f"DEBUG: AI pipeline service failed: {str(e)}")
+        print(f"DEBUG: Full traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"AI pipeline service unavailable: {str(e)}",

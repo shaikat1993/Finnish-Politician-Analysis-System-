@@ -117,3 +117,13 @@ htmlcov/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Neo4j
+/neo4j/data/
+/neo4j/logs/
+# Uncomment the line below if you don't want to include the dump in the repo
+# /neo4j/import/fpas-database-dump.dump
+
+# Cache
+.cache
+cache/
