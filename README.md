@@ -287,7 +287,33 @@ streamlit run frontend/app.py
 
 ## 📄 License
 
-[MIT License](LICENSE)
+This project is licensed under the [Creative Commons Attribution 4.0 International License (CC BY 4.0)](LICENSE).
+
+When using or referencing this work, please cite as follows:
+```
+"Finnish Politician Analysis System (FPAS)" by Md Sadidur Rahman, GPT-Lab, Tampere University.
+```
+
+## 🎓 Academic Context
+
+This project was developed as part of a Master's thesis at the Tampere University, under the supervision of [José Cerqueira](https://www.linkedin.com/in/jascerqueira/).
+
+### About GPT-Lab
+
+GPT-Lab is a collective of dreamers, thinkers, and innovators united by a common purpose: to revolutionize how the world communicates with AI. We are dedicated to exploring the limitless potential of Generative AI and large language models. Our goal is to create experiences that are both enlightening and enriching–pushing the boundaries of what is possible.
+
+At GPT-Lab, our work blends empirical research with real-world application to develop practical, AI-driven solutions that address complex societal and industrial challenges. As a growing research group rooted in multidisciplinary collaboration, we explore intersections with ethics, quantum computing, scientific discovery, and startup innovation.
+
+GPT-Lab was founded by [Professor Pekka Abrahamsson](https://www.linkedin.com/in/profabrahamsson/) at the Tampere University.
+
+## 🔬 Open Science Framework
+
+This project follows Open Science Framework best practices to ensure the work is:
+
+- **Reproducible**: All code, data sources, and methodologies are documented
+- **Replicable**: Clear instructions are provided for setting up and running the system
+- **Transparent**: All components and data sources are clearly described
+- **Accessible**: Licensed under CC BY 4.0 to allow academic and research use
 
 ## 🙏 Acknowledgements
 
@@ -295,3 +321,4 @@ streamlit run frontend/app.py
 - Statistics Finland for demographic data
 - OpenAI for AI capabilities
 - Neo4j for graph database technology
+- GPT-Lab and Tampere University for academic support
