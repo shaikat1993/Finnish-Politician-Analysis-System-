@@ -12,8 +12,8 @@ from pathlib import Path
 from collections import defaultdict
 
 from ..core.dependencies import get_ai_pipeline_service
-from ai_pipeline.security.metrics_collector import SecurityMetricsCollector
-from ai_pipeline.security.security_config import get_security_config
+from ai_pipeline.security.shared.metrics_collector import SecurityMetricsCollector
+from ai_pipeline.security.shared.security_config import get_security_config
 from ..core.config import Settings, get_settings
 
 router = APIRouter(
@@ -195,7 +195,7 @@ async def record_security_event(event: Dict[str, Any]) -> Dict[str, Any]:
         except Exception:
             # If record_event fails, create a fallback event and add it manually
             try:
-                from ai_pipeline.security.metrics_collector import SecurityEvent
+                from ai_pipeline.security.shared.metrics_collector import SecurityEvent
                 new_event = SecurityEvent(
                     event_type=event["event_type"],
                     component=event["component"],
@@ -428,7 +428,7 @@ async def detect_security_anomalies(
                 events = []
         
         # Import anomaly detector only if feature is enabled
-        from ai_pipeline.security.anomaly_detection import AnomalyDetector
+        from ai_pipeline.security.llm06_excessive_agency.anomaly_detection import AnomalyDetector
         
         # Create anomaly detector with specified sensitivity
         detector = AnomalyDetector(contamination=sensitivity)
@@ -562,7 +562,7 @@ async def get_telemetry_metrics() -> Dict[str, Any]:
         }
         
         # Import telemetry module only if feature is enabled
-        from ai_pipeline.security.telemetry import get_telemetry_manager
+        from ai_pipeline.security.shared.telemetry import get_telemetry_manager
         
         # Get telemetry manager with telemetry enabled
         telemetry_manager = get_telemetry_manager(enable_telemetry=True)
@@ -774,7 +774,7 @@ async def detect_security_anomalies(
                 events = []
         
         # Import anomaly detector only if feature is enabled
-        from ai_pipeline.security.anomaly_detection import AnomalyDetector
+        from ai_pipeline.security.llm06_excessive_agency.anomaly_detection import AnomalyDetector
         
         # Create anomaly detector with specified sensitivity
         detector = AnomalyDetector(contamination=sensitivity)
