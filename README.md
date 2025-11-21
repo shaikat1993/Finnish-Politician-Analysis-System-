@@ -104,15 +104,17 @@ streamlit run frontend/app.py
 - API Documentation: http://localhost:8000/docs
 - Neo4j Browser: http://localhost:7474 (if running locally)
 
-## 🐳 Running with Docker
+## 🐳 Running with Docker (Recommended)
 
 ### Prerequisites
 
 - [Docker](https://www.docker.com/get-started) and Docker Compose installed
 - Git installed
-- OpenAI API key (for AI analysis features)
+- OpenAI API key (get from https://platform.openai.com/api-keys)
 
-### Quick Start (Single Command)
+### Quick Start (3 Steps)
+
+**⚠️ IMPORTANT**: You **must** configure your credentials before running Docker!
 
 1. **Clone the repository**
 
@@ -121,51 +123,73 @@ git clone https://github.com/yourusername/fpas.git
 cd fpas
 ```
 
-2. **Set up environment variables**
+2. **Create and configure your environment file**
 
 ```bash
+# Copy the example file
 cp .env.example .env
+
+# Edit with your credentials (REQUIRED!)
+nano .env  # or use any text editor
 ```
 
-Edit the `.env` file and update at minimum these required variables:
+**Required changes in `.env`:**
+- `NEO4J_PASSWORD=` → Add your own secure password
+- `NEO4J_AUTH=neo4j/` → Add the same password after the slash
+- `OPENAI_API_KEY=` → Add your OpenAI API key (starts with sk-)
 
+**Example:**
+```env
+NEO4J_PASSWORD=mySecurePassword123
+NEO4J_AUTH=neo4j/mySecurePassword123
+OPENAI_API_KEY=sk-proj-abc123...
 ```
-NEO4J_PASSWORD=your_secure_password
-NEO4J_AUTH=neo4j/your_secure_password
-OPENAI_API_KEY=your_openai_api_key
-```
 
-3. **Start the entire system with a single command**
-
-This command will start all services and initialize the database:
+3. **Start all services**
 
 ```bash
-docker-compose up -d && docker-compose logs -f welcome
+docker-compose up -d
 ```
 
-```
-╔═══════════════════════════════════════════════════════════════════════╗
-║                                                                       ║
-║  🚀 Finnish Politician Analysis System (FPAS) is now running!         ║
-║                                                                       ║
-║  📊 Frontend Dashboard: http://localhost:8501                         ║
-║  🔍 API Documentation:  http://localhost:8000/docs                    ║
-║  🗄️ Neo4j Browser:      http://localhost:7474                         ║
-║                                                                       ║
-║  Login credentials for Neo4j:                                         ║
-║  Username: neo4j                                                      ║
-║  Password: 12345678 (or your custom password)                         ║
-║                                                                       ║
-╚═══════════════════════════════════════════════════════════════════════╝
+Wait 2-3 minutes for all services to start (Neo4j takes time to initialize).
+
+### ✅ Verify and Access
+
+Check if all services are running:
+```bash
+docker-compose ps
 ```
 
-4. **Access the system**
+All services should show "healthy" status.
 
-Simply click on the links displayed in your terminal:
+**Access the system:**
+- 📊 **Frontend Dashboard**: http://localhost:8501
+- 🔍 **API Documentation**: http://localhost:8000/docs
+- 🗄️ **Neo4j Browser**: http://localhost:7474
 
-- Frontend Dashboard: http://localhost:8501
-- API Documentation: http://localhost:8000/docs
-- Neo4j Browser: http://localhost:7474 (username: neo4j, password: your_secure_password)
+**Neo4j Login:**
+- Username: `neo4j`
+- Password: (whatever you set in your `.env` file)
+
+### 📖 Detailed Guide
+
+For troubleshooting, tips, and detailed instructions, see:
+- **[DOCKER_QUICK_START.md](DOCKER_QUICK_START.md)** - Complete Docker guide for new users
+- **[DOCKER_SETUP.md](DOCKER_SETUP.md)** - Advanced setup and production deployment
+- **[DOCKER_SECURITY_IMPLEMENTATION.md](DOCKER_SECURITY_IMPLEMENTATION.md)** - Security details
+
+### 🔒 Security Note
+
+**⚠️ NEVER commit your `.env` file to GitHub!**
+
+- ✅ `.env` is already in `.gitignore` (contains your real credentials)
+- ✅ `.env.example` is committed (safe template only)
+- ❌ Never share your `.env` file publicly (contains API keys that cost money!)
+
+If your repository is public, anyone can see the code but they'll need to:
+1. Create their own `.env` file
+2. Add their own OpenAI API key
+3. Set their own database password
 
 ### Alternative: Step-by-Step Startup
 

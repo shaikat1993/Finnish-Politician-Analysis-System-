@@ -50,8 +50,8 @@ class Neo4jConfig:
     """Neo4j connection configuration"""
     uri: str = os.getenv('NEO4J_URI', 'bolt://localhost:7687')
     user: str = os.getenv('NEO4J_USER', 'neo4j')
-    password: str = os.getenv('NEO4J_PASSWORD', 'neo4j')
-    database: str = os.getenv('NEO4J_DATABASE', 'neo4j')
+    password: str = os.getenv('NEO4J_PASSWORD', '12345678')
+    database: str = os.getenv('NEO4J_DATABASE', 'fpas-database')
     max_connection_lifetime: int = 3600  # 1 hour
     max_connection_pool_size: int = 100
     connection_acquisition_timeout: int = 60
