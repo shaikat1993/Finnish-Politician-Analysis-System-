@@ -148,7 +148,7 @@ class EliteAIPipelineService:
             security_metrics = {}
             try:
                 # Access metrics collected by security decorators
-                from ai_pipeline.security.metrics_collector import SecurityMetricsCollector
+                from ai_pipeline.security.shared.metrics_collector import SecurityMetricsCollector
                 collector = SecurityMetricsCollector()
                 security_metrics = collector.get_latest_metrics(agent_id)
             except Exception as e:
