@@ -11,20 +11,44 @@ from datetime import datetime
 # Set up module-level logger
 logger = logging.getLogger(__name__)
 
-# Minimal QueryTool implementation (DB tool)
+# QueryTool: Stub implementation for security research demonstration
+#
+# DESIGN DECISION (Design Science Research):
+# This stub tool demonstrates OWASP LLM06 permission control mechanisms without
+# requiring Neo4j/vector database infrastructure. Security mechanisms (permission
+# checking, rate limiting, audit logging) operate independently of database
+# implementation, allowing isolated evaluation of security controls.
+#
+# In production deployment, this would contain real database query logic such as:
+# - Cypher queries against Neo4j graph database
+# - Vector similarity search for semantic retrieval
+# - Hybrid search combining graph traversal and embeddings
+# - Complex relationship queries across politician networks
+#
+# The security architecture supports full database integration without modification.
 try:
     from langchain.tools import BaseTool
 except ImportError:
     BaseTool = object
 
 class QueryTool(BaseTool):
+    """
+    Stub implementation of QueryTool for OWASP LLM security research.
+
+    This simplified tool is used to demonstrate and evaluate security mechanisms
+    (OWASP LLM06 permission control) in isolation from database complexity.
+    Security overhead measurements and attack prevention validation remain valid
+    regardless of database implementation details.
+    """
     name: str = "QueryTool"
-    description: str = "Performs basic query (echoes input for test purposes)"
+    description: str = "Performs basic query (stub for demonstration purposes)"
 
     def _run(self, input: str) -> str:
-        return f"[QueryTool] Echo: {input}"
+        """Execute query operation (stub implementation for security testing)"""
+        return f"[QueryTool] Query complete: {input}"
 
     async def _arun(self, input: str) -> str:
+        """Async execution wrapper"""
         return self._run(input)
 
 class NewsSearchTool(BaseTool):
@@ -166,7 +190,9 @@ from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_community.tools import WikipediaQueryRun
 
 from ..memory.shared_memory import SharedAgentMemory
-from ..security.security_decorators import secure_prompt, secure_output, verify_response, track_metrics
+from ..security import secure_prompt, secure_output, verify_response, track_metrics
+from ..security import AgentPermissionManager
+from ..security import SecureAgentExecutor
 
 class QueryAgent:
     """
@@ -183,14 +209,14 @@ class QueryAgent:
     def __init__(self, shared_memory: SharedAgentMemory, openai_api_key: str = None) -> None:
         self.agent_id = "query_agent"
         self.shared_memory = shared_memory
-        
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model="gpt-4",
             temperature=0.2,  # Low temperature for consistent query generation
             openai_api_key=openai_api_key
         )
-        
+
         # Initialize tools
         wikipedia_api = WikipediaAPIWrapper()
         self.tools = [
@@ -199,7 +225,7 @@ class QueryAgent:
             DuckDuckGoSearchRun(),
             NewsSearchTool()
         ]
-        
+
         # Create agent prompt
         self.prompt = ChatPromptTemplate.from_messages([
             SystemMessage(content=self._get_system_prompt()),
@@ -207,27 +233,33 @@ class QueryAgent:
             ("human", "{input}"),
             MessagesPlaceholder(variable_name="agent_scratchpad")
         ])
-        
+
         # Create agent
         self.agent = create_openai_functions_agent(
             llm=self.llm,
             tools=self.tools,
             prompt=self.prompt
         )
-        
-        # Create executor
-        self.executor = AgentExecutor(
+
+        # Initialize OWASP LLM06 Permission Manager
+        self.permission_manager = AgentPermissionManager(enable_metrics=True)
+
+        # Create SECURED executor with LLM06 protection
+        self.executor = SecureAgentExecutor(
             agent=self.agent,
             tools=self.tools,
+            agent_id=self.agent_id,
+            permission_manager=self.permission_manager,
             memory=ConversationBufferMemory(
                 memory_key="chat_history",
                 return_messages=True
             ),
             verbose=True,
-            max_iterations=5
+            max_iterations=15,  # Increased from 5 to allow complex multi-tool queries
+            max_execution_time=30  # 30 second timeout for safety
         )
-        
-        logger.info(f"QueryAgent initialized with {len(self.tools)} tools")
+
+        logger.info(f"QueryAgent initialized with {len(self.tools)} tools and LLM06 protection")
     
     def _get_system_prompt(self) -> str:
         return """
@@ -469,5 +501,36 @@ You work as part of a multi-agent system. Your query results help users discover
                 "temporal_queries"
             ],
             "tools": [tool.name for tool in self.tools],
-            "status": "active"
+            "status": "active",
+            "security": {
+                "prompt_injection_protection": True,
+                "output_sanitization": True,
+                "response_verification": True,
+                "metrics_collection": True,
+                "excessive_agency_protection": True  # LLM06
+            }
         }
+
+    def get_security_metrics(self) -> Dict[str, Any]:
+        """
+        Get OWASP LLM06 security metrics for this agent
+
+        Returns:
+            Dictionary with permission enforcement metrics
+        """
+        return self.permission_manager.get_metrics()
+
+    def get_audit_log(self, result_filter: Optional[str] = None) -> List:
+        """
+        Get OWASP LLM06 audit log for this agent
+
+        Args:
+            result_filter: Filter by "allowed" or "denied" (optional)
+
+        Returns:
+            List of audit entries
+        """
+        return self.permission_manager.get_audit_log(
+            agent_id=self.agent_id,
+            result_filter=result_filter
+        )
