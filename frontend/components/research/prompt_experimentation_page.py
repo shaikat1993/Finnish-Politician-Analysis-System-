@@ -28,9 +28,6 @@ def main():
     # Add custom CSS
     st.markdown("""
     <style>
-    .main {
-        background-color: #f5f7f9;
-    }
     .stForm {
         background-color: white;
         padding: 20px;
