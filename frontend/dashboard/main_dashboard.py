@@ -157,7 +157,7 @@ class MainDashboard:
         # Ensure the security metrics collector is properly initialized with actual data
         try:
             # Import here to ensure it's available
-            from ai_pipeline.security.metrics_collector import SecurityMetricsCollector
+            from ai_pipeline.security.shared.metrics_collector import SecurityMetricsCollector
             self.security = SecurityMetricsDashboard()
             # Generate some actual security events for testing if needed
             self._generate_test_security_events()
@@ -175,8 +175,8 @@ class MainDashboard:
             metrics = self.security.get_metrics()
             if metrics.get("total_events", 0) == 0:
                 # Import the collector directly
-                from ai_pipeline.security.metrics_collector import SecurityMetricsCollector
-                
+                from ai_pipeline.security.shared.metrics_collector import SecurityMetricsCollector
+
                 # Get the collector from the dashboard
                 collector = self.security.metrics_collector
                 
