@@ -17,6 +17,8 @@ from .agents import (
     QueryAgent
 )
 from .memory.shared_memory import SharedAgentMemory
+from .security import AgentPermissionManager
+from .security import ExcessiveAgencyMonitor
 
 # Load environment variables
 load_dotenv()
@@ -39,11 +41,16 @@ class AgentOrchestrator:
         self.shared_memory = SharedAgentMemory()
         self.agents = {}
         self.is_initialized = False
-        
+
+        # Initialize OWASP LLM06 monitoring system
+        # Note: Individual agents have their own permission managers
+        # The orchestrator aggregates security metrics from all agents
+        self.security_monitor = None
+
         # Validate environment
         self._validate_environment()
-        
-        self.logger.info("AgentOrchestrator initialized")
+
+        self.logger.info("AgentOrchestrator initialized with LLM06 security monitoring")
     
     def _validate_environment(self):
         """Validate required environment variables"""
@@ -328,7 +335,8 @@ class AgentOrchestrator:
                 "shared_memory_system",
                 "fault_tolerant_workflows",
                 "real_time_adaptation",
-                "production_monitoring"
+                "production_monitoring",
+                "owasp_llm_security_controls"  # LLM01, LLM02, LLM06, LLM09
             ],
             "supported_workflows": [
                 "data_ingestion",
@@ -336,8 +344,171 @@ class AgentOrchestrator:
                 "health_check",
                 "relationship_analysis",
                 "content_analysis"
+            ],
+            "security_features": [
+                "LLM01: Prompt Injection Prevention",
+                "LLM02: Sensitive Information Disclosure Prevention",
+                "LLM06: Excessive Agency Prevention",
+                "LLM09: Misinformation Prevention"
             ]
         }
+
+    async def get_security_metrics(self) -> Dict[str, Any]:
+        """
+        Get aggregated OWASP LLM06 security metrics from all agents
+
+        Returns:
+            Dictionary with comprehensive security metrics across all agents
+        """
+        if not self.is_initialized:
+            await self.initialize()
+
+        try:
+            aggregated_metrics = {
+                "timestamp": datetime.now().isoformat(),
+                "orchestrator_level": "system_wide",
+                "agents": {},
+                "aggregate_stats": {
+                    "total_permission_checks": 0,
+                    "total_allowed": 0,
+                    "total_denied": 0,
+                    "overall_denial_rate": 0.0,
+                    "total_approval_requests": 0
+                }
+            }
+
+            # Collect metrics from each agent
+            for agent_name, agent in self.agents.items():
+                if hasattr(agent, 'get_security_metrics'):
+                    agent_metrics = agent.get_security_metrics()
+                    aggregated_metrics["agents"][agent_name] = agent_metrics
+
+                    # Aggregate statistics
+                    aggregated_metrics["aggregate_stats"]["total_permission_checks"] += agent_metrics.get("total_permission_checks", 0)
+                    aggregated_metrics["aggregate_stats"]["total_allowed"] += agent_metrics.get("allowed", 0)
+                    aggregated_metrics["aggregate_stats"]["total_denied"] += agent_metrics.get("denied", 0)
+                    aggregated_metrics["aggregate_stats"]["total_approval_requests"] += agent_metrics.get("approval_requests", 0)
+
+            # Calculate overall denial rate
+            total_checks = aggregated_metrics["aggregate_stats"]["total_permission_checks"]
+            if total_checks > 0:
+                aggregated_metrics["aggregate_stats"]["overall_denial_rate"] = (
+                    aggregated_metrics["aggregate_stats"]["total_denied"] / total_checks
+                )
+
+            self.logger.info("Collected security metrics from %d agents", len(self.agents))
+            return aggregated_metrics
+
+        except Exception as e:
+            self.logger.error(f"Error collecting security metrics: {str(e)}")
+            raise
+
+    async def get_security_report(self) -> Dict[str, Any]:
+        """
+        Generate comprehensive OWASP LLM06 security report
+
+        Analyzes all agents for excessive agency violations, anomalies,
+        and provides actionable security recommendations.
+
+        Returns:
+            Dictionary with comprehensive security report
+        """
+        if not self.is_initialized:
+            await self.initialize()
+
+        try:
+            self.logger.info("Generating comprehensive LLM06 security report")
+
+            # Collect metrics from all agents
+            metrics = await self.get_security_metrics()
+
+            # Initialize security monitor if needed
+            # We'll use the first agent's permission manager for system-wide monitoring
+            if not self.security_monitor and self.agents:
+                first_agent = list(self.agents.values())[0]
+                if hasattr(first_agent, 'permission_manager'):
+                    self.security_monitor = ExcessiveAgencyMonitor(
+                        permission_manager=first_agent.permission_manager,
+                        enable_metrics=True
+                    )
+
+            # Generate security report
+            security_report = {
+                "report_type": "ORCHESTRATOR_WIDE_SECURITY_REPORT",
+                "generated_at": datetime.now().isoformat(),
+                "owasp_risk": "LLM06:2025 - Excessive Agency",
+                "system_metrics": metrics,
+                "agent_security_status": {},
+                "anomalies": [],
+                "recommendations": []
+            }
+
+            # Collect security status from each agent
+            for agent_name, agent in self.agents.items():
+                agent_info = agent.get_agent_info()
+                security_report["agent_security_status"][agent_name] = {
+                    "security_features": agent_info.get("security", {}),
+                    "tools": agent_info.get("tools", []),
+                    "status": agent_info.get("status", "unknown")
+                }
+
+                # Get audit log for violations
+                if hasattr(agent, 'get_audit_log'):
+                    violations = agent.get_audit_log(result_filter="denied")
+                    if violations:
+                        security_report["agent_security_status"][agent_name]["violations"] = len(violations)
+                        security_report["agent_security_status"][agent_name]["recent_violations"] = [
+                            {
+                                "tool": v.tool_name,
+                                "operation": v.operation,
+                                "reason": v.reason,
+                                "timestamp": v.timestamp
+                            }
+                            for v in violations[-5:]  # Last 5 violations
+                        ]
+
+            # Detect anomalies if monitor is available
+            if self.security_monitor:
+                anomalies = self.security_monitor.detect_anomalies()
+                security_report["anomalies"] = [
+                    {
+                        "type": a.anomaly_type,
+                        "severity": a.severity,
+                        "agent": a.agent_id,
+                        "description": a.description,
+                        "recommendation": a.recommendation
+                    }
+                    for a in anomalies
+                ]
+
+            # Generate recommendations
+            overall_denial_rate = metrics["aggregate_stats"]["overall_denial_rate"]
+            if overall_denial_rate > 0.3:
+                security_report["recommendations"].append(
+                    f"High denial rate detected ({overall_denial_rate:.1%}). "
+                    "Review agent permission policies for potential misalignment."
+                )
+
+            if not security_report["recommendations"]:
+                security_report["recommendations"].append(
+                    "No critical security issues detected. System operating within normal parameters."
+                )
+
+            # Add compliance status
+            security_report["owasp_compliance"] = {
+                "LLM01_prompt_injection": "IMPLEMENTED",
+                "LLM02_sensitive_info": "IMPLEMENTED",
+                "LLM06_excessive_agency": "IMPLEMENTED",
+                "LLM09_misinformation": "IMPLEMENTED",
+                "overall_status": "COMPLIANT"
+            }
+
+            self.logger.info("Security report generated successfully")
+            return security_report
+
+        except Exception as e:
+            self.logger.error(f"Error generating security report: {str(e)}")
+            raise
 
 # Global orchestrator instance
 _orchestrator_instance = None

@@ -5,7 +5,7 @@ pydantic>=2.5.0,<3.0.0
 pydantic-core>=2.14.0,<3.0.0
 pydantic-settings>=2.0.0,<3.0.0
 requests==2.31.0
-feedparser==6.0.10
+feedparser==6.0.11  # Updated for Python 3.13 compatibility
 
 # Backend
 fastapi==0.110.0
@@ -24,11 +24,12 @@ networkx>=3.1,<4.0
 pandas>=2.0.0,<3.0.0  # Added for LazyMode visualizations
 
 # AI Pipeline - Updated for Python 3.13 compatibility
-langchain==0.1.12
-langchain-core==0.1.33
-langchain-community==0.0.29
-langchain-openai==0.0.8
-langchain-text-splitters==0.0.1
+langchain==0.3.0
+langchain-core==0.3.0
+langchain-community==0.3.0
+langchain-openai==0.2.0
+langchain-text-splitters==0.3.0
+sqlalchemy>=2.0.36  # For Python 3.13 compatibility
 duckduckgo-search
 openai==1.12.0
 wikipedia
@@ -41,7 +42,6 @@ matplotlib>=3.8.0,<4.0.0
 
 # Data Processing
 beautifulsoup4==4.12.2
-feedparser==6.0.10
 wikipedia-api==0.6.0
 html5lib==1.1
 chardet==5.2.0
