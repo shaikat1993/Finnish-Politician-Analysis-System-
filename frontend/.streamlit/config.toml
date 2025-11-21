@@ -1,0 +1,42 @@
+[server]
+# Enable CORS for Docker environments
+enableCORS = true
+enableXsrfProtection = true
+
+# Set headless mode for Docker
+headless = true
+
+# Port configuration
+port = 8501
+address = "0.0.0.0"
+
+# File watcher type (use poll for Docker)
+fileWatcherType = "poll"
+
+# Server configuration for better performance
+maxUploadSize = 200
+maxMessageSize = 200
+
+[browser]
+# Disable gathering usage stats
+gatherUsageStats = false
+
+# Server address for browser (important for Docker)
+serverAddress = "0.0.0.0"
+serverPort = 8501
+
+[theme]
+# Optional: Set a clean theme
+base = "light"
+primaryColor = "#3b82f6"
+backgroundColor = "#0e1117"
+secondaryBackgroundColor = "#637178ff"
+textColor = "#ffffffff"
+font = "sans serif"
+
+[client]
+# Enable showing errors in browser
+showErrorDetails = true
+
+# Toolbar mode
+toolbarMode = "minimal"
