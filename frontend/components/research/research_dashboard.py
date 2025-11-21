@@ -30,9 +30,6 @@ def main():
     # Add custom CSS
     st.markdown("""
     <style>
-    .main {
-        background-color: #f5f7f9;
-    }
     .stMetric {
         background-color: white;
         padding: 15px;
