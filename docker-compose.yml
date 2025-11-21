@@ -7,9 +7,10 @@ services:
     ports:
       - "7474:7474"   # Web interface
       - "7687:7687"   # Bolt protocol
+    # env_file removed - Neo4j should only receive specific config vars, not all from .env
     environment:
-      NEO4J_AUTH: neo4j/12345678
-      NEO4J_dbms_default__database: fpas-database
+      NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/12345678}
+      NEO4J_dbms_default__database: ${NEO4J_DATABASE:-fpas-database}
       NEO4J_dbms_memory_pagecache_size: 1G
       NEO4J_dbms_memory_heap_initial__size: 512m
       NEO4J_dbms_memory_heap_max__size: 1G
@@ -25,7 +26,7 @@ services:
       - ./neo4j/plugins:/plugins
     entrypoint: ["/bin/bash", "/import/init.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "cypher-shell -u neo4j -p 12345678 -d fpas-database 'RETURN 1' || exit 1"]
+      test: ["CMD-SHELL", "cypher-shell -u ${NEO4J_USER:-neo4j} -p ${NEO4J_PASSWORD:-12345678} -d ${NEO4J_DATABASE:-fpas-database} 'RETURN 1' || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 20
@@ -49,9 +50,9 @@ services:
       - PYTHONPATH=/app
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - NEO4J_URI=bolt://neo4j:7687
-      - NEO4J_USER=neo4j
-      - NEO4J_PASSWORD=12345678
-      - NEO4J_DATABASE=fpas-database
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-12345678}
+      - NEO4J_DATABASE=${NEO4J_DATABASE:-fpas-database}
     volumes:
       - .:/app
       - ./cache:/app/cache
@@ -80,8 +81,8 @@ services:
     environment:
       - NEO4J_URI=${NEO4J_URI:-bolt://neo4j:7687}
       - NEO4J_USER=${NEO4J_USER:-neo4j}
-      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-fpaspassword}
-      - NEO4J_DATABASE=${NEO4J_DATABASE:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-12345678}
+      - NEO4J_DATABASE=${NEO4J_DATABASE:-fpas-database}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ENVIRONMENT=docker
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
@@ -132,9 +133,9 @@ services:
     environment:
       - PYTHONPATH=/app
       - NEO4J_URI=bolt://neo4j:7687
-      - NEO4J_USER=neo4j
-      - NEO4J_PASSWORD=12345678
-      - NEO4J_DATABASE=fpas-database
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-12345678}
+      - NEO4J_DATABASE=${NEO4J_DATABASE:-fpas-database}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ENRICH_LIMIT=${ENRICH_LIMIT:-5}
     volumes:
@@ -154,8 +155,7 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    env_file:
-      - .env
+    # env_file removed - prevents localhost override in Docker, .env still works for local dev
     environment:
       - API_BASE_URL=http://api:8000/api/v1
       - PYTHONPATH=/app
@@ -188,9 +188,9 @@ services:
       - .env
     environment:
       - NEO4J_URI=bolt://neo4j:7687
-      - NEO4J_USER=neo4j
-      - NEO4J_PASSWORD=12345678
-      - NEO4J_DATABASE=fpas-database
+      - NEO4J_USER=${NEO4J_USER:-neo4j}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-12345678}
+      - NEO4J_DATABASE=${NEO4J_DATABASE:-fpas-database}
       - PYTHONPATH=/app
     volumes:
       - .:/app
@@ -206,19 +206,21 @@ services:
     depends_on:
       api:
         condition: service_healthy
+    env_file:
+      - .env
     command: >
-      echo "
-      
-      🚀 FPAS is now running!                  
-      
+      sh -c 'echo "
+
+      🚀 FPAS is now running!
+
       📊 Frontend:    http://localhost:8501
-      🔍 API Docs:    http://localhost:8000/docs 
-      🗄️ Neo4j:       http://localhost:7474      
-                                                 
-      Neo4j Login:                               
+      🔍 API Docs:    http://localhost:8000/docs
+      🗄️ Neo4j:       http://localhost:7474
+
+      Neo4j Login:                            
       Username: neo4j                            
-      Password: 12345678                         
-      "
+      Password: 12345678 
+      "'
     restart: "no"
     networks:
       - fpas-network
