@@ -127,3 +127,40 @@ htmlcov/
 # Cache
 .cache
 cache/
+
+# Environment files with credentials
+.env
+.env.local
+.env.*.local
+
+# Docker volumes
+neo4j/data/
+neo4j/logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Cache
+cache/
+.cache/
+
+# Test reports
+test_reports/
