@@ -24,7 +24,7 @@ try:
     from ai_pipeline.agents.analysis_agent import AnalysisAgent
     from ai_pipeline.agents.query_agent import QueryAgent
     from ai_pipeline.memory.shared_memory import SharedMemory
-    from ai_pipeline.security.metrics_collector import SecurityMetricsCollector
+    from ai_pipeline.security.shared.metrics_collector import SecurityMetricsCollector
     PIPELINE_COMPONENTS_AVAILABLE = True
 except ImportError:
     PIPELINE_COMPONENTS_AVAILABLE = False
