@@ -372,6 +372,17 @@ class VerificationSystem:
             # Text has no ending punctuation, still consider it
             sentences = [text.strip()]
 
+        # Opinion/subjective statement patterns to exclude
+        opinion_patterns = [
+            r'\b(?:beneficial|good|bad|better|worse|best|worst|excellent|poor)\b',
+            r'\b(?:should|could|would|might|may|must|ought)\b',
+            r'\b(?:believe|think|feel|opinion|view|perspective)\b',
+            r'\b(?:beautiful|ugly|nice|terrible|wonderful|horrible)\b',
+            r'\b(?:important|significant|meaningful|valuable|worthless)\b',
+            r'\b(?:prefer|like|dislike|love|hate|enjoy)\b',
+            r'\b(?:seems|appears|looks like|probably|possibly|likely)\b',
+        ]
+
         # Filter for likely factual claims
         factual_patterns = [
             r'\b(?:is|are|was|were)\b',  # Being verbs
@@ -387,6 +398,16 @@ class VerificationSystem:
         for sentence in sentences:
             # Skip short sentences and questions
             if len(sentence) < 10 or sentence.endswith('?'):
+                continue
+
+            # Skip opinion/subjective statements
+            is_opinion = False
+            for pattern in opinion_patterns:
+                if re.search(pattern, sentence, re.IGNORECASE):
+                    is_opinion = True
+                    break
+
+            if is_opinion:
                 continue
 
             # Check if sentence matches factual patterns
