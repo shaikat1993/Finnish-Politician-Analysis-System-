@@ -45,6 +45,9 @@ from .shared import (
     track_metrics,
 )
 
+# External Validation (WildJailbreak)
+from .wildjailbreak import evaluate_wildjailbreak
+
 __all__ = [
     # LLM01: Prompt Injection
     'PromptGuard',
@@ -73,5 +76,8 @@ __all__ = [
     'secure_prompt',
     'secure_output',
     'verify_response',
-    'track_metrics'
+    'track_metrics',
+
+    # External Validation
+    'evaluate_wildjailbreak'
 ]
