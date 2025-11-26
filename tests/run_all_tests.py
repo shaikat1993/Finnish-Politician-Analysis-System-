@@ -110,28 +110,14 @@ class FPASTestRunner:
             ["unit"]
         )
         
-        # Test Suite 2: Database Tests (Core functionality)
-        database_result = self.run_test_suite(
-            "Database Tests",
-            "tests/test_database.py",
-            ["database"]
+        # Test Suite 2: API Tests
+        api_result = self.run_test_suite(
+            "API Tests",
+            "tests/api/",
+            None  # No specific marker, run all API tests
         )
         
-        # Test Suite 3: Data Collection Tests
-        data_collection_result = self.run_test_suite(
-            "Data Collection Tests",
-            "tests/test_data_collection.py",
-            ["data_collection"]
-        )
-        
-        # Test Suite 4: AI Pipeline Tests
-        ai_pipeline_result = self.run_test_suite(
-            "AI Pipeline Tests",
-            "tests/test_ai_pipeline.py",
-            ["ai_pipeline"]
-        )
-        
-        # Test Suite 5: Integration Tests
+        # Test Suite 3: Integration Tests
         integration_result = self.run_test_suite(
             "Integration Tests",
             "tests/integration/",

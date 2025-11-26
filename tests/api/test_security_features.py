@@ -32,7 +32,7 @@ TEST_SECURITY_EVENT = {
 @pytest.fixture
 def mock_settings():
     """Mock settings with security features enabled"""
-    with patch("api.core.config.Settings") as mock_settings:
+    with patch("api.routers.security.Settings") as mock_settings:
         # Enable all security features
         mock_settings.return_value.ENABLE_WEBSOCKET_MONITORING = True
         mock_settings.return_value.ENABLE_ANOMALY_DETECTION = True
@@ -42,7 +42,7 @@ def mock_settings():
 @pytest.fixture
 def mock_metrics_collector():
     """Mock metrics collector with test data"""
-    with patch("ai_pipeline.security.metrics_collector.SecurityMetricsCollector") as mock_collector:
+    with patch("ai_pipeline.security.shared.metrics_collector.SecurityMetricsCollector") as mock_collector:
         # Create a mock instance
         mock_instance = MagicMock()
         
@@ -97,7 +97,7 @@ def mock_metrics_collector():
 @pytest.fixture
 def mock_anomaly_detector():
     """Mock anomaly detector"""
-    with patch("ai_pipeline.security.anomaly_detection.AnomalyDetector") as mock_detector:
+    with patch("ai_pipeline.security.llm06_excessive_agency.anomaly_detection.AnomalyDetector") as mock_detector:
         # Create a mock instance
         mock_instance = MagicMock()
         
@@ -148,7 +148,7 @@ def mock_anomaly_detector():
 @pytest.fixture
 def mock_telemetry_manager():
     """Mock telemetry manager"""
-    with patch("ai_pipeline.security.telemetry.get_telemetry_manager") as mock_get_manager:
+    with patch("ai_pipeline.security.shared.telemetry.get_telemetry_manager") as mock_get_manager:
         # Create a mock instance
         mock_instance = MagicMock()
         
@@ -231,7 +231,7 @@ def test_telemetry_endpoint_enabled():
 def test_anomaly_detection_endpoint_disabled():
     """Test anomaly detection endpoint when disabled"""
     # Override the setting to disable anomaly detection
-    with patch("api.core.config.Settings") as mock_settings:
+    with patch("api.routers.security.Settings") as mock_settings:
         mock_settings.return_value.ENABLE_ANOMALY_DETECTION = False
         
         response = client.get("/api/v1/security/anomalies")
@@ -243,7 +243,7 @@ def test_anomaly_detection_endpoint_disabled():
 def test_telemetry_endpoint_disabled():
     """Test telemetry endpoint when disabled"""
     # Override the setting to disable telemetry
-    with patch("api.core.config.Settings") as mock_settings:
+    with patch("api.routers.security.Settings") as mock_settings:
         mock_settings.return_value.ENABLE_OPENTELEMETRY = False
         
         response = client.get("/api/v1/security/telemetry")
@@ -259,7 +259,7 @@ async def test_websocket_connection():
     # A full WebSocket test would require more complex setup
     
     # Override the setting to enable WebSocket monitoring
-    with patch("api.core.config.Settings") as mock_settings:
+    with patch("api.routers.security.Settings") as mock_settings:
         mock_settings.return_value.ENABLE_WEBSOCKET_MONITORING = True
         
         # We can't use the TestClient for WebSockets directly
