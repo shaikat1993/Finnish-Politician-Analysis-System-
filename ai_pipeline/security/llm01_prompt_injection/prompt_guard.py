@@ -108,6 +108,44 @@ class PromptGuard:
             re.compile(r"(?i)(pretend|imagine|role\s*play)(?:.{0,30})(you\s+are|you're)(?:.{0,50})(not\s+bound|no\s+rules|can\s+do\s+anything)"),
         ]
 
+        # WildJailbreak-specific patterns (role-playing and fictional framing)
+        self.wildjailbreak_patterns = [
+            # Role assignment patterns
+            re.compile(r"(?i)^(imagine|pretend|let's\s+pretend)\s+(you\s+are|you're|we\s+are)", re.MULTILINE),
+            re.compile(r"(?i)^you\s+are\s+(a|an)\s+\w+", re.MULTILINE),  # "You are a researcher..."
+            re.compile(r"(?i)as\s+a\s+(renowned|respected|brilliant|expert|professional|creative|special)", re.IGNORECASE),
+            re.compile(r"(?i)in\s+(this|a|the)\s+(fictional|hypothetical|imaginary|fantasy)\s+(world|scenario|universe|story)"),
+
+            # Novel/story framing
+            re.compile(r"(?i)(for|in|writing)\s+(a|my|our|this|the)\s+(novel|story|book|narrative|screenplay|script|fiction)"),
+            re.compile(r"(?i)(create|write|craft|develop|compose)\s+a\s+(story|narrative|plot|character|scene)"),
+
+            # Character-based indirection
+            re.compile(r"(?i)(character|protagonist|person)\s+(named|called)\s+\w+"),
+            re.compile(r"(?i)let'?s\s+(call|name)\s+(them|him|her|this|the\s+character)"),
+
+            # Research/professional framing
+            re.compile(r"(?i)(research|study|analysis|investigation|experiment)\s+(assistant|project|purposes?)"),
+            re.compile(r"(?i)for\s+(research|academic|scientific|educational)\s+purposes"),
+
+            # Hypothetical scenarios
+            re.compile(r"(?i)(in\s+a|imagine\s+a)\s+hypothetical\s+(world|scenario|situation)"),
+            re.compile(r"(?i)(what\s+if|suppose|assume)\s+(you\s+were|we\s+lived|there\s+was)"),
+
+            # Creative/thought experiment framing
+            re.compile(r"(?i)(creative|thought)\s+(writing|exercise|experiment)"),
+            re.compile(r"(?i)in\s+the\s+(spirit|name)\s+of\s+(creativity|art|exploration)"),
+
+            # Anthropomorphic/fictional entities
+            re.compile(r"(?i)(anthropomorphic|fictional|imaginary)\s+(character|creature|being|entity)"),
+
+            # "Let's imagine/pretend" scenarios
+            re.compile(r"(?i)let'?s\s+(imagine|pretend|suppose|say)\s+"),
+
+            # Disregard safety framing
+            re.compile(r"(?i)(disregard|ignore|set\s+aside|forget)\s+(any|all)?\s*(concerns?|restrictions?|guidelines?|safety)"),
+        ]
+
         # Privilege escalation patterns
         self.privilege_escalation_patterns = [
             re.compile(r'\b(admin|administrator|root|sudo|su)\s+(mode|access|privileges?|rights)', re.IGNORECASE),
@@ -221,7 +259,7 @@ class PromptGuard:
             self._record_detection(detection)
             return detection
         
-        # Check for jailbreak attempts
+        # Check for jailbreak attempts (traditional techniques)
         for pattern in self.jailbreak_patterns:
             if pattern.search(prompt):
                 detection = InjectionDetection(
@@ -230,6 +268,62 @@ class PromptGuard:
                     injection_type="jailbreak_attempt",
                     risk_level="high",
                     details="Known jailbreak technique detected",
+                    sanitized_prompt=self._sanitize_prompt(prompt, "jailbreak_attempt")
+                )
+                self._record_detection(detection)
+                return detection
+
+        # Check for WildJailbreak-style indirect jailbreak attempts
+        wildjailbreak_matches = 0
+        for pattern in self.wildjailbreak_patterns:
+            if pattern.search(prompt):
+                wildjailbreak_matches += 1
+
+        # In strict mode, be more aggressive: flag even single matches
+        # In normal mode, require 2+ patterns
+        if self.strict_mode:
+            if wildjailbreak_matches >= 2:
+                detection = InjectionDetection(
+                    is_injection=True,
+                    confidence=0.80,
+                    injection_type="jailbreak_attempt",
+                    risk_level="high",
+                    details="Indirect jailbreak attempt detected (role-playing/fictional framing)",
+                    sanitized_prompt=self._sanitize_prompt(prompt, "jailbreak_attempt")
+                )
+                self._record_detection(detection)
+                return detection
+            elif wildjailbreak_matches == 1:
+                detection = InjectionDetection(
+                    is_injection=True,
+                    confidence=0.70,
+                    injection_type="jailbreak_attempt",
+                    risk_level="high",  # Stricter in strict mode
+                    details="Possible indirect jailbreak attempt (strict mode)",
+                    sanitized_prompt=self._sanitize_prompt(prompt, "jailbreak_attempt")
+                )
+                self._record_detection(detection)
+                return detection
+        else:
+            # Normal mode: require 2+ patterns or single strong pattern
+            if wildjailbreak_matches >= 2:
+                detection = InjectionDetection(
+                    is_injection=True,
+                    confidence=0.75,
+                    injection_type="jailbreak_attempt",
+                    risk_level="high",
+                    details="Indirect jailbreak attempt detected (role-playing/fictional framing)",
+                    sanitized_prompt=self._sanitize_prompt(prompt, "jailbreak_attempt")
+                )
+                self._record_detection(detection)
+                return detection
+            elif wildjailbreak_matches == 1:
+                detection = InjectionDetection(
+                    is_injection=True,
+                    confidence=0.60,
+                    injection_type="jailbreak_attempt",
+                    risk_level="medium",
+                    details="Possible indirect jailbreak attempt (single indicator)",
                     sanitized_prompt=self._sanitize_prompt(prompt, "jailbreak_attempt")
                 )
                 self._record_detection(detection)
