@@ -1,14 +1,15 @@
 """
-Finland map component with province visualization
+Finland map component with province visualization using Plotly
+Docker-friendly, no JSON serialization issues
 """
 
 import streamlit as st
-import folium
-from streamlit_folium import st_folium
+import plotly.graph_objects as go
 import json
 import asyncio
 import httpx
 import os
+import pandas as pd
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 import logging
@@ -76,7 +77,6 @@ class FinlandMap:
             self.logger.info("🔄 Fetching province data from API...")
             province_data = await self.fetch_province_data()
             self.logger.info(f"📡 API returned {len(province_data)} provinces")
-            
             # Convert API response to ProvinceMarker objects
             successful_markers = 0
             for i, province in enumerate(province_data):
@@ -390,147 +390,108 @@ class FinlandMap:
         return popup_html
     
     def render(self):
-        """Render enhanced Finland map with province shapes, bounds restriction, and interactive functionality"""
+        """Render enhanced Finland map using Plotly (Docker-friendly, no serialization issues)"""
         try:
             if not self._map_loaded:
                 st.warning("Map data is loading...")
                 return None
             
-            # Debug: Log current state
-            self.logger.info(f"🗺️ Rendering map with {len(self.markers)} markers")
-            self.logger.info(f"📍 Marker IDs: {[m.id for m in self.markers]}")
+            # Debug logging
+            self.logger.info(f"🗺️ Rendering Plotly map with {len(self.markers)} markers")
             if self._geojson_loaded:
                 geojson_ids = [f['properties']['id'] for f in self.geojson_data.get('features', [])]
                 self.logger.info(f"🗺️ GeoJSON province IDs: {geojson_ids}")
-            else:
-                self.logger.warning("⚠️ GeoJSON data not loaded")
-
-            # Create a map centered on Finland with restricted bounds
-            # Calculate proper center coordinates - shift westward to center Finland
-            center_lat = (self.finland_bounds['north'] + self.finland_bounds['south']) / 2
-            center_lon = (self.finland_bounds['west'] + self.finland_bounds['east']) / 2  # Shift east for sidebar layout
-            m = folium.Map(
-                location=[center_lat, center_lon],
-                zoom_start=5,
-                tiles="cartodbpositron",
-                max_bounds=True,
-                min_zoom=3,
-                max_zoom=13
-            )
             
-            # Set max bounds to restrict panning outside Finland
-            m.options['maxBounds'] = [
-                [self.finland_bounds['south'], self.finland_bounds['west']],
-                [self.finland_bounds['north'], self.finland_bounds['east']]
-            ]
+            # Prepare data for Plotly
+            df = pd.DataFrame([
+                {
+                    'id': m.id,
+                    'name': m.name,
+                    'lat': m.lat,
+                    'lon': m.lon,
+                    'politician_count': m.politician_count,
+                    'population': m.population,
+                    'area': m.area,
+                    'hover_text': f"<b>{m.name}</b><br>" +
+                                  f"Population: {m.population:,}<br>" +
+                                  f"Area: {m.area:,.1f} km²"
+                }
+                for m in self.markers
+            ])            
+            # Create figure
+            fig = go.Figure()
             
-            # Add province boundary shapes with hover functionality
-            rendered_provinces = set()
+            # Add province boundaries (choropleth) if GeoJSON loaded
             if self._geojson_loaded and self.geojson_data:
-                self.logger.info(f"🗺️ Processing {len(self.geojson_data.get('features', []))} GeoJSON features")
-                for feature in self.geojson_data['features']:
-                    province_id = feature['properties']['id']
-                    province_name = feature['properties']['name']
-                    
-                    # Find matching marker data for this province
-                    marker_data = next((m for m in self.markers if m.id == province_id), None)
-                    
-                    if marker_data:
-                        rendered_provinces.add(province_id)
-                        self.logger.info(f"✅ Rendering GeoJSON shape for {province_id}")
-                        # Add province shape with hover highlighting
-                        folium.GeoJson(
-                            feature,
-                            style_function=lambda x, marker=marker_data: {
-                                'fillColor': '#3498db',
-                                'color': '#2c3e50',
-                                'weight': 2,
-                                'fillOpacity': 0.3,
-                                'dashArray': '5, 5'
-                            },
-                            highlight_function=lambda x: {
-                                'fillColor': '#e74c3c',
-                                'color': '#c0392b',
-                                'weight': 3,
-                                'fillOpacity': 0.7,
-                                'dashArray': ''
-                            },
-                            tooltip=folium.Tooltip(
-                                self.create_province_popup_content(marker_data.__dict__),
-                                sticky=True,
-                                style="background-color: white; border: 2px solid #3498db; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);"
-                            ),
-                            popup=folium.Popup(
-                                self.create_province_popup_content(marker_data.__dict__),
-                                max_width=400
-                            )
-                        ).add_to(m)
-                        
-                        # Add center marker for click identification
-                        folium.CircleMarker(
-                            location=[marker_data.lat, marker_data.lon],
-                            radius=6,
-                            color='#2c3e50',
-                            fill=True,
-                            fillColor='#3498db',
-                            fillOpacity=0.8,
-                            weight=2,
-                            tooltip=f"📍 {province_name} Center"
-                        ).add_to(m)
-                    else:
-                        self.logger.warning(f"⚠️ No marker data found for GeoJSON province: {province_id}")
+                self.logger.info(f"✅ Adding choropleth layer with {len(self.geojson_data.get('features', []))} provinces")
+                fig.add_trace(go.Choroplethmapbox(
+                    geojson=self.geojson_data,
+                    locations=df['id'],
+                    z=df['population'],  # Color by population (politician_count is all 0)
+                    featureidkey="properties.id",
+                    customdata=df[['name', 'area']],  # Province details for hover
+                    colorscale=[
+                        [0, '#e8f4f8'],      # Light blue for low population
+                        [0.5, '#3498db'],    # Medium blue
+                        [1, '#2c3e50']       # Dark blue for high population
+                    ],
+                    marker_opacity=0.5,
+                    marker_line_width=2,
+                    marker_line_color='#2c3e50',
+                    hovertemplate='<b>%{customdata[0]}</b><br>' +
+                                  'Population: %{z:,}<br>' +
+                                  'Area: %{customdata[1]:,.1f} km²<br>' +
+                                  '<extra></extra>',
+                    showscale=False,
+                    name='Provinces'
+                ))
             
-            # FALLBACK: Add simple markers for any provinces not rendered via GeoJSON
-            unrendered_provinces = [m for m in self.markers if m.id not in rendered_provinces]
-            if unrendered_provinces:
-                self.logger.info(f"📍 Adding {len(unrendered_provinces)} simple markers for unrendered provinces")
-                for marker in unrendered_provinces:
-                    self.logger.info(f"📍 Adding simple marker for {marker.id} at ({marker.lat}, {marker.lon})")
-                    
-                    # Create simple circle marker for provinces without GeoJSON
-                    folium.CircleMarker(
-                        location=[marker.lat, marker.lon],
-                        radius=8,
-                        popup=folium.Popup(
-                            f"<b>{marker.name}</b><br>" +
-                            f"Politicians: {marker.politician_count}<br>" +
-                            f"Population: {marker.population:,}<br>" +
-                            f"Area: {marker.area:,.1f} km²",
-                            max_width=300
-                        ),
-                        tooltip=f"{marker.name} - {marker.politician_count} politicians",
-                        color='#2E86AB',
-                        fill=True,
-                        fillColor='#A23B72',
-                        fillOpacity=0.7,
-                        weight=2
-                    ).add_to(m)
-
-            # Display the map with enhanced interaction tracking
-            map_data = st_folium(
-                m, 
-                width=600, 
-                height=600, 
-                returned_objects=["last_object_clicked", "last_clicked"],
-                key="finland_map"
+            # Add province center markers
+            fig.add_trace(go.Scattermapbox(
+                lat=df['lat'],
+                lon=df['lon'],
+                mode='markers',
+                marker=dict(
+                    size=14,
+                    color='#3498db',
+                    opacity=0.9
+                ),
+                text=df['hover_text'],
+                hoverinfo='text',
+                name='Province Centers',
+                customdata=df[['name', 'politician_count', 'population', 'area']]
+            ))
+            
+            # Update layout to show ALL of Finland
+            # Calculate exact center from bounds
+            center_lat = (self.finland_bounds['north'] + self.finland_bounds['south']) / 2
+            center_lon = (self.finland_bounds['west'] + self.finland_bounds['east']) / 2
+            
+            fig.update_layout(
+                mapbox=dict(
+                    style="carto-positron",
+                    center=dict(lat=center_lat, lon=center_lon),
+                    zoom=4.0,  # Zoom level to show full Finland (all 19 provinces visible)
+                ),
+                height=600,
+                margin=dict(l=0, r=0, t=0, b=0),
+                showlegend=False,
+                hovermode='closest'
             )
             
-            # Enhanced province selection feedback
-            if map_data and map_data.get('last_object_clicked'):
-                clicked_data = map_data['last_object_clicked']
-                if clicked_data and 'properties' in clicked_data:
-                    province_name = clicked_data['properties'].get('name', 'Unknown Province')
-                    st.success(f"🎯 **Selected Province:** {province_name}")
+            # Display map in Streamlit
+            st.plotly_chart(fig, use_container_width=True, key="finland_map_plotly")
             
-            # Enhanced summary statistics with better layout
+            # Enhanced summary statistics (same as before)
             total_politicians = sum(marker.politician_count for marker in self.markers)
             total_population = sum(marker.population for marker in self.markers)
             total_area = sum(marker.area for marker in self.markers)
             
-            # Create a more spacious layout for better visibility
+            # Use API count if available, otherwise use sum from markers
+            display_politician_count = self.total_politician_count if self.total_politician_count > 0 else total_politicians
+            
             st.subheader("📊 Finland Overview")
             
-            # Use two rows of metrics for better display
             col1, col2 = st.columns(2)
             with col1:
                 st.metric(
@@ -546,7 +507,7 @@ class FinlandMap:
             with col2:
                 st.metric(
                     label="👥 Politicians", 
-                    value=f"{self.total_politician_count}",
+                    value=f"{display_politician_count}",
                     help="Total number of politicians in database"
                 )
                 st.metric(
@@ -555,9 +516,11 @@ class FinlandMap:
                     help="Total area of all Finnish provinces"
                 )
             
-            return map_data
+            return fig
 
         except Exception as e:
-            self.logger.error(f"Error rendering enhanced map: {e}")
+            self.logger.error(f"Error rendering Plotly map: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
             st.error(f"Failed to render map: {str(e)}")
             return None
