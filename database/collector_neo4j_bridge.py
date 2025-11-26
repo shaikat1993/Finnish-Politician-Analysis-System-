@@ -20,10 +20,8 @@ from database.neo4j_integration import (
     get_neo4j_writer, get_neo4j_manager
 )
 
-# Import all 11 collectors
+# Import all 9 collectors (removed broken Kuntaliitto and Vaalikone)
 from politicians.eduskunta_collector import EduskuntaCollector
-from politicians.kuntaliitto_collector import KuntaliitoCollector
-from politicians.vaalikone_collector import VaalikoneCollector
 
 from news.yle_news_collector import YleNewsCollector
 from news.helsingin_sanomat_collector import HelsingingSanomatCollector
@@ -44,12 +42,10 @@ class CollectorNeo4jBridge:
         self.neo4j_writer = None
         self.transformer = DataTransformer()
         
-        # Initialize all 11 collectors
+        # Initialize all 9 collectors (removed broken Kuntaliitto and Vaalikone)
         self.collectors = {
-            # Politicians (3 collectors)
+            # Politicians (1 collector - primary source)
             'eduskunta': EduskuntaCollector(),
-            'kuntaliitto': KuntaliitoCollector(),
-            'vaalikone': VaalikoneCollector(),
             
             # News (5 collectors)
             'yle': YleNewsCollector(),
@@ -95,7 +91,7 @@ class CollectorNeo4jBridge:
             Dictionary with processing results
         """
         if sources is None:
-            sources = ['eduskunta', 'kuntaliitto', 'vaalikone']
+            sources = ['eduskunta']  # Only working politician collector
         
         self.processing_stats['start_time'] = datetime.now()
         results = {
