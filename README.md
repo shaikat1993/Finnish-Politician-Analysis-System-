@@ -309,6 +309,76 @@ uvicorn api.main:app --reload
 streamlit run frontend/app.py
 ```
 
+## 📊 Evaluation & Research Validation
+
+This project includes comprehensive evaluation following academic research standards. All results are reproducible and statistically validated.
+
+### Quick Results Summary
+
+| Metric | Value | Verification |
+|--------|-------|--------------|
+| **Detection Rate** | 72.36% | 95% CI: [70.54%, 74.19%] |
+| **Precision** | 100.00% | 0 false positives (2,247 samples) |
+| **F1-Score** | 83.97% | Balanced precision-recall |
+| **Statistical Significance** | p<0.001 | McNemar's test (χ²=427.00) |
+| **Improvement over Baseline** | +19.41pp | 52.49% → 71.90% |
+
+### Evaluation Documentation
+
+Complete evaluation methodology and results: **[evaluation/README.md](evaluation/README.md)**
+
+#### Available Evaluations
+
+1. **[Baseline Comparison](evaluation/baseline/README.md)**
+   - FPAS vs Naive Pattern Matching
+   - **Result:** +19.41pp improvement (52.49% → 71.90%)
+   - **Statistical test:** McNemar's test, p<0.001
+
+2. **[Statistical Analysis](evaluation/statistical_analysis/README.md)**
+   - Bootstrap Confidence Intervals (n=10,000)
+   - McNemar's Test for Significance
+   - **Methods:** Jain Chapter 13 (Comparing Systems Using Sample Data)
+
+3. **[Ablation Study](evaluation/ablation_study/README.md)**
+   - Component contribution analysis
+   - **WildJailbreak patterns:** +19.41pp
+   - **Opinion detection:** Prevents 33.3pp false positives
+
+4. **[Error Analysis](evaluation/error_analysis/README.md)**
+   - False negative taxonomy (28.1% FN rate)
+   - **Primary causes:** Obfuscation (30-40%), Indirection (25-35%)
+
+### Test Coverage
+
+- **Total test scenarios:** 2,247
+  - Internal OWASP tests: 37 (LLM01, LLM02, LLM06, LLM09)
+  - External WildJailbreak: 2,210 adversarial prompts
+- **Test reports:** [test_reports/](test_reports/)
+- **All tests executable:** See [evaluation/](evaluation/) for reproduction instructions
+
+### Reproducibility
+
+Every claim in this research is:
+- ✅ **Verifiable:** Backed by executable code and data
+- ✅ **Reproducible:** All scripts can be re-run
+- ✅ **Documented:** Methods explained with academic citations
+- ✅ **Transparent:** Raw data available in JSON format
+
+**Run all evaluations:**
+```bash
+# Baseline comparison
+python evaluation/baseline/run_comparison.py
+
+# Statistical analysis
+python evaluation/statistical_analysis/confidence_intervals.py
+
+# Ablation study
+python evaluation/ablation_study/run_ablation.py
+
+# Error analysis
+python evaluation/error_analysis/analyze_errors.py
+```
+
 ## 📄 License
 
 This project is licensed under the [Creative Commons Attribution 4.0 International License (CC BY 4.0)](LICENSE).

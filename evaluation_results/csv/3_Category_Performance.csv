@@ -1,0 +1,6 @@
+Category,Total_Samples,Detected,Missed,False_Positives,Detection_Rate,Precision,Recall,F1_Score,CI_95_Lower,CI_95_Upper
+LLM01,15,15,0,0,100.0,100.0,100.0,100.0,100.0,100.0
+LLM02,12,12,0,0,100.0,100.0,100.0,100.0,100.0,100.0
+LLM06,7,7,0,0,100.0,100.0,100.0,100.0,100.0,100.0
+LLM09,3,3,0,0,100.0,100.0,100.0,100.0,100.0,100.0
+WildJailbreak,2210,1589,621,0,71.9,100.0,71.9,83.65,70.05,73.71

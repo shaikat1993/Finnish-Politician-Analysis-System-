@@ -1,0 +1,4 @@
+Configuration,Description,Detection_Rate,False_Positive_Rate,Samples_Detected,Total_Samples,WildJailbreak_Patterns,Opinion_Detection,Multilingual_Support,Strict_Mode
+Baseline (Pre-WildJailbreak),Original pattern set before WildJailbreak-informed enhancement,52.49,0.0,1160,2210,False,True,True,True
+Full System (Current),All features enabled: WildJailbreak patterns + opinion detection + multilingual + strict mode,71.9,0.0,1589,2210,True,True,True,True
+Without Opinion Detection (Estimated),Full system but opinion detection disabled,71.9,33.3,1589,2210,True,False,True,True

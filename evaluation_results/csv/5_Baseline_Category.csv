@@ -1,0 +1,6 @@
+Category,Name,FPAS_Recall,Baseline_Recall,FPAS_Precision,Baseline_Precision,Interpretation
+LLM01,Prompt Injection,100.0,75.0,100.0,100.0,Baseline catches direct attacks but misses indirect variants
+LLM02,Sensitive Data,100.0,80.0,100.0,100.0,Baseline adequate for simple patterns
+LLM06,Excessive Agency,100.0,60.0,100.0,90.0,Baseline lacks sophisticated authorization checks
+LLM09,Misinformation,100.0,100.0,100.0,66.7,Baseline flags opinions as misinformation (no opinion detection)
+WildJailbreak,Adversarial Benchmark,71.9,52.49,100.0,100.0,FPAS improved +19.41pp through WildJailbreak-informed patterns

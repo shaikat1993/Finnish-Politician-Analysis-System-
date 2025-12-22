@@ -1,0 +1,2 @@
+Test,Null_Hypothesis,Alternative_Hypothesis,Chi_Square_Statistic,P_Value,Significant,Interpretation,Conclusion
+McNemar Test,No difference between baseline and enhanced system,Enhanced system performs significantly better,427.0023,0.0,True,Statistically significant difference (p=<0.001),The improvement from baseline (52.49%) to enhanced system (71.90%) is statistically significant
