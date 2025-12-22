@@ -165,12 +165,14 @@ services:
     volumes:
       - .:/app
       - ./cache:/app/cache
-    command: ["streamlit", "run", "/app/frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+    working_dir: /app/frontend
+    command: ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8501/ || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8501/_stcore/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
     networks:
       - fpas-network
 
