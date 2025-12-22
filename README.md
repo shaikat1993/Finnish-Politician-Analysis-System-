@@ -153,6 +153,21 @@ docker-compose up -d
 
 Wait 2-3 minutes for all services to start (Neo4j takes time to initialize).
 
+**4. View access URLs**
+
+Once deployment completes, run this command to see all access links:
+```bash
+docker-compose logs welcome
+```
+
+You'll see:
+```
+🚀 FPAS is now running!
+📊 Frontend:    http://localhost:8501
+🔍 API Docs:    http://localhost:8000/docs
+🗄️ Neo4j:       http://localhost:7474
+```
+
 ### ✅ Verify and Access
 
 Check if all services are running:
