@@ -22,5 +22,5 @@ COPY . /app
 # Expose API port
 EXPOSE 8000
 
-# Entrypoint: production-ready uvicorn
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+# Entrypoint: production-ready uvicorn (single worker for Docker to avoid fork issues)
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
