@@ -1,0 +1,16 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Force LF for shell scripts (critical for Docker containers)
+*.sh text eol=lf
+
+# Force LF for Docker and config files
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+*.dockerfile text eol=lf
+
+# Python files
+*.py text eol=lf
+
+# Force binary for dump files
+*.dump binary
