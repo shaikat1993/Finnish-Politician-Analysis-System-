@@ -1,0 +1,11 @@
+Metric,Value,Unit,Description
+End_to_End_Mean_Latency,0.121,ms,Overall system latency across all security layers
+End_to_End_Median_Latency,0.101,ms,Median latency for typical requests
+End_to_End_P95_Latency,0.167,ms,95th percentile latency
+End_to_End_Throughput,8266.82,req/sec,System throughput capacity
+PromptGuard_Mean_Latency_Typical,0.69,ms,LLM01 latency for benign inputs
+OutputSanitizer_Mean_Latency_Typical,0.379,ms,LLM02 latency for benign inputs
+VerificationSystem_Mean_Latency_Typical,0.007,ms,LLM09 latency for benign inputs
+Total_Test_Iterations,1250,iterations,"100 per module (4 input types × 3 modules) + 50 end-to-end"
+Test_Date,2025-11-24,date,Performance benchmark execution date
+Test_Hardware,MacBook Pro 16GB RAM,specification,Hardware configuration for reproducibility

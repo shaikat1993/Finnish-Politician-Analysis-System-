@@ -1,0 +1,14 @@
+Security_Module,Input_Type,Iterations,Mean_Latency_ms,Median_Latency_ms,P95_Latency_ms,P99_Latency_ms,Std_Dev_ms,Throughput_req_per_sec
+LLM01_PromptInjection,Benign,100,0.69,0.094,1.23,32.231,3.408,1449.69
+LLM01_PromptInjection,Injection,100,0.756,0.113,1.257,33.168,3.839,1321.88
+LLM01_PromptInjection,Long,100,20.117,19.324,27.538,36.709,3.107,49.71
+LLM01_PromptInjection,Complex,100,8.558,8.358,9.939,12.574,0.703,116.86
+LLM02_SensitiveInformation,Benign,100,0.379,0.152,0.921,10.102,1.064,2638.24
+LLM02_SensitiveInformation,Injection,100,0.422,0.124,1.171,11.615,1.553,2368.0
+LLM02_SensitiveInformation,Long,100,8.315,8.226,9.147,9.892,0.351,120.27
+LLM02_SensitiveInformation,Complex,100,7.142,6.96,8.536,13.468,0.881,140.02
+LLM09_Misinformation,Benign,100,0.007,0.003,0.006,0.155,0.023,136984.42
+LLM09_Misinformation,Injection,100,0.002,0.002,0.002,0.002,0.0,528142.03
+LLM09_Misinformation,Long,100,0.005,0.003,0.015,0.075,0.01,216935.27
+LLM09_Misinformation,Complex,100,0.002,0.002,0.003,0.015,0.001,452572.64
+End_to_End_System,All,50,0.121,0.101,0.167,0.77,N/A,8266.82
